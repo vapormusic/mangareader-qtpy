@@ -1,0 +1,1 @@
+pyuic4 C:\Users\vieta\OneDrive\Documents\mangareader\mangareader.ui -o mangareader.py
