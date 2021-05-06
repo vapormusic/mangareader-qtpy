@@ -1,9 +1,11 @@
 import mangareader
-import urllib2
+import requests
 from bs4 import BeautifulSoup
 from PyQt4 import QtCore, QtGui
 import json
 from searchcard import SearchCardView
+from PIL import Image
+
 
 class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
  
@@ -20,27 +22,30 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
         'Connection': 'keep-alive'}
     def setupUi(self, MainWindow):
         super(Ui_MainWindowImpl, self).setupUi(MainWindow)
+        self.next.setStyleSheet("border : 0; background-color: transparent;")
+        self.prev.setStyleSheet("border : 0; background-color: transparent;")
+        #self.next.setVisible(False)
+        #self.prev.setVisible(False)
         ## annoying pycui error fix
         MainWindow.setCentralWidget(self.stackedwidget)
 
         
         # get list of images from 1 chapter ###########
 
-        req = urllib2.Request(self.url, headers=self.hdr)
-        response = urllib2.urlopen(req)
+        req = requests.get(self.url, headers=self.hdr)        
         ## data = json.load(response)   
         # print response.fp.read()
-        soup = BeautifulSoup(response, 'html.parser')
+        soup = BeautifulSoup(req.text, 'html.parser')
         self.images = soup.find_all('img', attrs={'class':"img-loading"})
-        #print images[0]['data-src']
+        print self.images[0]['data-src']
 
 
         # load first image #################
 
-        self.image0 = urllib2.Request(self.images[self.page]['data-src'],headers=self.hdr)
-        image0res = urllib2.urlopen(self.image0).read()
+        self.image0 = requests.get(self.images[0]['data-src'],headers=self.hdr, stream=True)
         image = QtGui.QImage()
-        image.loadFromData(image0res)
+        image.loadFromData(self.image0.content)
+        
         self.image.setPixmap(QtGui.QPixmap(image))
 
         #buttons ###########
@@ -51,13 +56,47 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
         self.actionReader.triggered.connect(self.readerpage_fun)
         self.searchButton.clicked.connect(self.querysearch)
 
+        #self.tableWidget.setStyleSheet("""QTableWidget::item { font-size: 10pt }""")
+        #self.tableWidget.mousePressEvent().connect(self.keyboardinput)
+
+        #keyboard buttons ####### boilerplate
+        
+        self.key_q.clicked.connect( lambda:self.kbinput('q'))
+        self.key_w.clicked.connect( lambda:self.kbinput('w'))
+        self.key_e.clicked.connect( lambda:self.kbinput('e'))
+        self.key_r.clicked.connect( lambda:self.kbinput('r'))
+        self.key_t.clicked.connect( lambda:self.kbinput('t'))
+        self.key_y.clicked.connect( lambda:self.kbinput('y'))
+        self.key_u.clicked.connect( lambda:self.kbinput('u'))
+        self.key_i.clicked.connect( lambda:self.kbinput('i'))
+        self.key_o.clicked.connect( lambda:self.kbinput('o'))
+        self.key_p.clicked.connect( lambda:self.kbinput('p'))
+        self.key_l.clicked.connect( lambda:self.kbinput('l'))
+        self.key_k.clicked.connect( lambda:self.kbinput('k'))
+        self.key_j.clicked.connect( lambda:self.kbinput('j'))
+        self.key_h.clicked.connect( lambda:self.kbinput('h'))
+        self.key_g.clicked.connect( lambda:self.kbinput('g'))
+        self.key_f.clicked.connect( lambda:self.kbinput('f'))
+        self.key_d.clicked.connect( lambda:self.kbinput('d'))
+        self.key_s.clicked.connect( lambda:self.kbinput('s'))
+        self.key_a.clicked.connect( lambda:self.kbinput('a'))
+        self.key_z.clicked.connect( lambda:self.kbinput('z'))
+        self.key_x.clicked.connect( lambda:self.kbinput('x'))
+        self.key_c.clicked.connect( lambda:self.kbinput('c'))
+        self.key_v.clicked.connect( lambda:self.kbinput('v'))
+        self.key_b.clicked.connect( lambda:self.kbinput('b'))
+        self.key_n.clicked.connect( lambda:self.kbinput('n'))
+        self.key_m.clicked.connect( lambda:self.kbinput('m'))
+        self.key_bksp.clicked.connect( lambda:self.kbinput('bksp'))
+        self.key_shift.clicked.connect( lambda:self.kbinput('shift'))
+        self.key_space.clicked.connect( lambda:self.kbinput('space'))
+
     def nextpage(self):
-        if self.page < len(self.images) :
+        if self.page < len(self.images) -1:
           self.page += 1
-        self.image0 = urllib2.Request(self.images[self.page]['data-src'],headers=self.hdr)    
-        image0res = urllib2.urlopen(self.image0).read()
+        self.image0 = requests.get(self.images[self.page]['data-src'],headers=self.hdr)    
         image = QtGui.QImage()
-        image.loadFromData(image0res)
+        image.loadFromData(self.image0.content)
         self.image.setPixmap(QtGui.QPixmap(image))
     
 
@@ -65,21 +104,31 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
     def prevpage(self):
         if self.page > 0 :
           self.page += -1
-        self.image0 = urllib2.Request(self.images[self.page]['data-src'],headers=self.hdr)    
-        image0res = urllib2.urlopen(self.image0).read()
+        self.image0 = requests.get(self.images[self.page]['data-src'],headers=self.hdr)    
         image = QtGui.QImage()
-        image.loadFromData(image0res)
+        image.loadFromData(self.image0.content)
         self.image.setPixmap(QtGui.QPixmap(image))  
+
+    def kbinput(self, char):
+        text = self.mangaSearch.text()
+        if len(char) == 1:   
+            text = str(text) + str(char).lower() 
+            self.mangaSearch.setText(text)
+        elif char == 'space':
+            text = str(text) + str(" ") 
+            self.mangaSearch.setText(text)
+        elif char == "bksp":
+            text = str(text)[:-1]
+            self.mangaSearch.setText(text)    
 
     def querysearch(self):
         self.searchlist.clear()
         text = self.mangaSearch.text()
         linkurl = str('https://manganelo.tv/search/'+str(text))
-        req = urllib2.Request(linkurl, headers=self.hdr)
-        response = urllib2.urlopen(req)
+        req = requests.get(linkurl, headers=self.hdr)
         ## data = json.load(response)   
         # print response.fp.read()
-        soup = BeautifulSoup(response, 'html.parser')
+        soup = BeautifulSoup(req.text, 'html.parser')
         results = soup.find_all('div', attrs={'class':"search-story-item"})   
         if len(results) != 0:
             for result in results:
@@ -126,6 +175,14 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
 
 if __name__ == "__main__":
     import sys
+    print(QtGui.QImageReader.supportedImageFormats())
+    if len(QtGui.QImageReader.supportedImageFormats()) < 10: 
+        #windows
+        QtCore.QCoreApplication.addLibraryPath('C:\\Python27\\Lib\\site-packages\\PyQt4\\plugins') 
+        #kindle
+        QtCore.QCoreApplication.addLibraryPath('/mnt/us/python/lib/python2.7/site-packages/PyQt4/plugins')
+    else:
+        pass 
     app = QtGui.QApplication(sys.argv)
     MainWindow = QtGui.QMainWindow()
     ui = Ui_MainWindowImpl()

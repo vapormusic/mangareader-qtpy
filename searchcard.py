@@ -1,7 +1,7 @@
 import sys
 from PyQt4 import QtGui
 class SearchCardView (QtGui.QWidget):
-    def __init__ (self, parent = None):
+    def __init__ (self, parent = None): 
         super(SearchCardView, self).__init__(parent)
         self.textQVBoxLayout = QtGui.QVBoxLayout()
         self.textUpQLabel    = QtGui.QLabel()
