@@ -7,6 +7,49 @@ from searchcard import SearchCardView
 from PIL import Image
 import hashlib
 
+class TestListModel(QtCore.QAbstractListModel):
+    def __init__(self, parent=None):
+        QtCore.QAbstractListModel.__init__(self, parent)
+        self.list = parent
+        self.results = []
+
+    def inputData(self,results):
+        self.results = results    
+
+    def rowCount(self, index):
+        return len(self.results)
+
+    def data(self, index, role):
+        if role == QtCore.Qt.DisplayRole:
+            if not self.list.indexWidget(index):
+                url = self.results[index.row() ].find('a', attrs={'class':"chapter-name text-nowrap"})['href']
+                title = self.results[index.row() ].find('a', attrs={'class':"chapter-name text-nowrap"}).text
+                author = self.results[index.row() ].find('span', attrs={'class':"chapter-time text-nowrap"}).text
+                icon = ""
+                myQCustomQWidget = SearchCardView()
+                myQCustomQWidget.setTextUp(title)
+                myQCustomQWidget.setTextDown(author)
+                myQCustomQWidget.setIcon(icon)
+                myQCustomQWidget.setUrl(url)
+                myQCustomQWidget.setIndex(index.row() -1)
+                print(index.row())
+
+                # # Create QListWidgetItem
+                # myQListWidgetItem2 = QtGui.QListWidgetItem(self.list)
+                # print(index.row() -1)
+                # myQListWidgetItem2.setData(2, (index.row() -1,url)) 
+                # # Set size hint
+                # myQListWidgetItem2.setSizeHint(myQCustomQWidget.sizeHint())
+                # # Add QListWidgetItem into QListWidget
+                # self.list.addItem(myQListWidgetItem2)
+                self.list.setIndexWidget(index, myQCustomQWidget)
+            return QtCore.QVariant()
+
+        if role == QtCore.Qt.SizeHintRole:
+            return QtCore.QSize(100, 50)
+
+    def columnCount(self, index):
+        pass
 
 class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
  
@@ -174,9 +217,9 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
                 self.searchlist.setItemWidget(myQListWidgetItem, myQCustomQWidget)
             self.searchlist.itemClicked.connect(self.mangainfo)
 
+
     def mangainfo(self, item):
-       data = item.data(1).toPyObject()
-        
+       data = item.data(1).toPyObject()        
        if data != self.lastsel2:
         print(data)
         url = str('https://manganelo.tv')+ data[0]
@@ -190,8 +233,7 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
         image = QtGui.QImage()
         image.loadFromData(infoimage0.content)
         self.infoimage.setPixmap(QtGui.QPixmap(image)) 
-
-        self.infochapters.clear()
+        #self.infochapters.clear()
         req = requests.get(url, headers=self.hdr)
         ## data = json.load(response)   
         # print response.fp.read()
@@ -200,32 +242,41 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
         results = preresult.find_all('li', attrs={'class':"a-h"})
         if len(results) != 0:
             self.tmp_index = -1
-            for result in results:
-                self.tmp_index += 1
-                url = result.find('a', attrs={'class':"chapter-name text-nowrap"})['href']
-                title = result.find('a', attrs={'class':"chapter-name text-nowrap"}).text
-                author = result.find('span', attrs={'class':"chapter-time text-nowrap"}).text
-                icon = ""
-                myQCustomQWidget = SearchCardView()
-                myQCustomQWidget.setTextUp(title)
-                myQCustomQWidget.setTextDown(author)
-                myQCustomQWidget.setIcon(icon)
-                myQCustomQWidget.setUrl(url)
-                myQCustomQWidget.setIndex(self.tmp_index)
+            # for result in results:
+            #     self.tmp_index += 1
+            #     url = result.find('a', attrs={'class':"chapter-name text-nowrap"})['href']
+            #     title = result.find('a', attrs={'class':"chapter-name text-nowrap"}).text
+            #     author = result.find('span', attrs={'class':"chapter-time text-nowrap"}).text
+            #     icon = ""
+            #     myQCustomQWidget = SearchCardView()
+            #     myQCustomQWidget.setTextUp(title)
+            #     myQCustomQWidget.setTextDown(author)
+            #     myQCustomQWidget.setIcon(icon)
+            #     myQCustomQWidget.setUrl(url)
+            #     myQCustomQWidget.setIndex(self.tmp_index)
                 
 
-                # Create QListWidgetItem
-                myQListWidgetItem2 = QtGui.QListWidgetItem(self.infochapters)
-                print(self.tmp_index)
-                myQListWidgetItem2.setData(2, (self.tmp_index,url))
+            #     # Create QListWidgetItem
+            #     myQListWidgetItem2 = QtGui.QListWidgetItem(self.infochapters)
+            #     print(self.tmp_index)
+            #     myQListWidgetItem2.setData(2, (self.tmp_index,url))
                 
                 
-                # Set size hint
-                myQListWidgetItem2.setSizeHint(myQCustomQWidget.sizeHint())
-                # Add QListWidgetItem into QListWidget
-                self.infochapters.addItem(myQListWidgetItem2)
-                self.infochapters.setItemWidget(myQListWidgetItem2, myQCustomQWidget)
-            self.infochapters.itemClicked.connect(self.saveRes)
+            #     # Set size hint
+            #     myQListWidgetItem2.setSizeHint(myQCustomQWidget.sizeHint())
+            #     # Add QListWidgetItem into QListWidget
+            #     self.infochapters.addItem(myQListWidgetItem2)
+            #     self.infochapters.setItemWidget(myQListWidgetItem2, myQCustomQWidget)
+            model = TestListModel(self.infochapters)
+            model.inputData(results)
+            self.infochapters.setModel(model)    
+            self.infochapters.clicked.connect(self.saveRes2)
+
+    def saveRes2(self, index): 
+        self.launchreader(self.infochapters.model().results[index.row()].find('a', attrs={'class':"chapter-name text-nowrap"})['href'])
+
+
+        
 
     def saveRes(self, item): 
         print 'bruh'
@@ -298,3 +349,5 @@ if __name__ == "__main__":
 
     MainWindow.show()
     sys.exit(app.exec_())
+
+

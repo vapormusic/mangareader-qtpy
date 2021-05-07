@@ -267,7 +267,7 @@ class Ui_MainWindow(object):
         self.infotext = QtGui.QLabel(self.centralwidget3)
         self.infotext.setGeometry(QtCore.QRect(20, 80, 731, 81))
         self.infotext.setObjectName(_fromUtf8("infotext"))
-        self.infochapters = QtGui.QListWidget(self.centralwidget3)
+        self.infochapters = QtGui.QListView(self.centralwidget3)
         self.infochapters.setGeometry(QtCore.QRect(0, 420, 1071, 861))
         self.infochapters.setObjectName(_fromUtf8("infochapters"))
         self.stackedwidget.addWidget(self.centralwidget3)

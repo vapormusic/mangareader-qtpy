@@ -731,7 +731,7 @@ background-color: white;
       <string>TextLabel</string>
      </property>
     </widget>
-    <widget class="QListWidget" name="infochapters">
+    <widget class="QListView" name="infochapters">
      <property name="geometry">
       <rect>
        <x>0</x>
