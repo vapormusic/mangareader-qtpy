@@ -12,7 +12,15 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
     image0 = None
     page = 0
     images = None
+    chapters_urls = []
+    chapters_urls_search = []
+    chapter_index = 0
+    prevchapter_url = ''
+    nextchapter_url = ''
+    lastsel1 = None
+    lastsel2 = None
     searchresultslist = None
+    tmp_index = 0
     url = 'https://manganelo.tv/chapter/please_dont_bully_me_nagatoro/chapter_82'
     hdr = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
@@ -94,20 +102,36 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
     def nextpage(self):
         if self.page < len(self.images) -1:
           self.page += 1
-        self.image0 = requests.get(self.images[self.page]['data-src'],headers=self.hdr)    
-        image = QtGui.QImage()
-        image.loadFromData(self.image0.content)
-        self.image.setPixmap(QtGui.QPixmap(image))
+          self.image0 = requests.get(self.images[self.page]['data-src'],headers=self.hdr)    
+          image = QtGui.QImage()
+          image.loadFromData(self.image0.content)
+          self.image.setPixmap(QtGui.QPixmap(image))
+        else:
+          print self.chapter_index
+          print len(self.chapters_urls)
+          if self.chapter_index > 0:
+            self.chapter_index -=1 
+            self.launchreader(self.chapter_index)
+          else:
+            QtGui.QMessageBox.about(QtGui.QMainWindow(), "L:A_N:application_ID:Last Chapter",
+            "<H1>Latest chapter!</H1>".decode("utf8"))      
     
 
 
     def prevpage(self):
         if self.page > 0 :
           self.page += -1
-        self.image0 = requests.get(self.images[self.page]['data-src'],headers=self.hdr)    
-        image = QtGui.QImage()
-        image.loadFromData(self.image0.content)
-        self.image.setPixmap(QtGui.QPixmap(image))  
+          self.image0 = requests.get(self.images[self.page]['data-src'],headers=self.hdr)    
+          image = QtGui.QImage()
+          image.loadFromData(self.image0.content)
+          self.image.setPixmap(QtGui.QPixmap(image))
+        else:
+          if self.chapter_index < len(self.chapters_urls) -1:
+            self.chapter_index +=1             
+            self.launchreader(self.chapter_index)
+          else:
+            QtGui.QMessageBox.about(QtGui.QMainWindow(), "L:A_N:application_ID:Last Chapter",
+            "<H1>First chapter!</H1>".decode("utf8"))      
 
     def kbinput(self, char):
         text = self.mangaSearch.text()
@@ -155,12 +179,103 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
             self.searchlist.itemClicked.connect(self.mangainfo)
 
     def mangainfo(self, item):
-        data = item.data(1).toPyObject()
+       data = item.data(1).toPyObject()
+        
+       if data != self.lastsel2:
         print(data)
-        url = data[0]
+        url = str('https://manganelo.tv')+ data[0]
         title = data[1]
         author = data[2]
-        icon = data[3]
+        icon = str('https://manganelo.tv')+ data[3]
+
+        self.stackedwidget.setCurrentIndex(2)
+        self.infotext.setText(title)
+        infoimage0 = requests.get(icon,headers=self.hdr)    
+        image = QtGui.QImage()
+        image.loadFromData(infoimage0.content)
+        self.infoimage.setPixmap(QtGui.QPixmap(image)) 
+
+        self.infochapters.clear()
+        req = requests.get(url, headers=self.hdr)
+        ## data = json.load(response)   
+        # print response.fp.read()
+        soup = BeautifulSoup(req.text, 'html.parser')
+        preresult = soup.find('ul', attrs={'class':"row-content-chapter"})
+        results = preresult.find_all('li', attrs={'class':"a-h"})
+        self.chapters_urls_search = []
+        if len(results) != 0:
+            self.tmp_index = -1
+            for result in results:
+                self.tmp_index += 1
+                url = result.find('a', attrs={'class':"chapter-name text-nowrap"})['href']
+                title = result.find('a', attrs={'class':"chapter-name text-nowrap"}).text
+                author = result.find('span', attrs={'class':"chapter-time text-nowrap"}).text
+                icon = ""
+                myQCustomQWidget = SearchCardView()
+                myQCustomQWidget.setTextUp(title)
+                myQCustomQWidget.setTextDown(author)
+                myQCustomQWidget.setIcon(icon)
+                myQCustomQWidget.setUrl(url)
+                myQCustomQWidget.setIndex(self.tmp_index)
+                
+                self.chapters_urls_search.append(url)
+
+                # Create QListWidgetItem
+                myQListWidgetItem2 = QtGui.QListWidgetItem(self.infochapters)
+                print(self.tmp_index)
+                myQListWidgetItem2.setData(2, (self.tmp_index,url))
+                
+                
+                # Set size hint
+                myQListWidgetItem2.setSizeHint(myQCustomQWidget.sizeHint())
+                # Add QListWidgetItem into QListWidget
+                self.infochapters.addItem(myQListWidgetItem2)
+                self.infochapters.setItemWidget(myQListWidgetItem2, myQCustomQWidget)
+            self.infochapters.itemClicked.connect(self.saveRes)
+
+    def saveRes(self, item): 
+        print 'bruh'
+        data = item.data(2).toPyObject() 
+        if data != self.lastsel2:
+          self.lastsel2 = data
+          data = item.data(2).toPyObject()     
+          self.chapter_index = data[0]
+          self.chapters_urls = self.chapters_urls_search
+          self.chapters_urls_search = []
+          print self.chapters_urls
+          self.launchreader(data[0])
+
+    def launchreader(self,index):
+        print "index:" + str(index)
+        self.chapter_index = index
+        self.url = self.chapters_urls[index]
+        if index > 0 & index < (len(self.chapters_urls) -1):
+           self.prevchapter_url = self.chapters_urls[index-1]
+           self.nextchapter_url = self.chapters_urls[index+1]
+        elif index == 0: 
+           self.prevchapter_url = ""
+           self.nextchapter_url = self.chapters_urls[1]    
+        elif index == len(self.chapters_urls) -1:
+           self.prevchapter_url = self.chapters_urls[index-1]
+           self.nextchapter_url = ""     
+        req = requests.get(str('https://manganelo.tv')+ self.url, headers=self.hdr)        
+        ## data = json.load(response)   
+        # print response.fp.read()
+        soup = BeautifulSoup(req.text, 'html.parser')
+        self.images = soup.find_all('img', attrs={'class':"img-loading"})
+        print self.images[0]['data-src']
+
+
+        # load first image #################
+
+        self.image0 = requests.get(self.images[0]['data-src'],headers=self.hdr, stream=True)
+        image = QtGui.QImage()
+        image.loadFromData(self.image0.content)
+        
+        self.image.setPixmap(QtGui.QPixmap(image))
+        self.stackedwidget.setCurrentIndex(0)  
+
+
 
     def actionQuit_fun(self):
         quit()   

@@ -14,6 +14,7 @@ class SearchCardView (QtGui.QWidget):
         self.allQHBoxLayout.addLayout(self.textQVBoxLayout, 1)
         self.setLayout(self.allQHBoxLayout)
         self.mangaurl = None
+        self.index = 0
         # setStyleSheet
         self.textUpQLabel.setStyleSheet('''
             color: rgb(0, 0, 255);
@@ -32,4 +33,7 @@ class SearchCardView (QtGui.QWidget):
         self.iconQLabel.setPixmap(QtGui.QPixmap(imagePath))
 
     def setUrl (self, text):
-        self.mangaurl = text       
+        self.mangaurl = text   
+
+    def setIndex (self, index):
+        self.index = index          

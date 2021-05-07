@@ -153,7 +153,7 @@
      <property name="geometry">
       <rect>
        <x>0</x>
-       <y>700</y>
+       <y>940</y>
        <width>1071</width>
        <height>351</height>
       </rect>
@@ -696,6 +696,50 @@ background-color: white;
        </item>
       </layout>
      </widget>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="centralwidget3">
+    <widget class="QLabel" name="infoimage">
+     <property name="geometry">
+      <rect>
+       <x>800</x>
+       <y>80</y>
+       <width>241</width>
+       <height>321</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="pixmap">
+      <pixmap>download.png</pixmap>
+     </property>
+     <property name="scaledContents">
+      <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="QLabel" name="infotext">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>80</y>
+       <width>731</width>
+       <height>81</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>TextLabel</string>
+     </property>
+    </widget>
+    <widget class="QListWidget" name="infochapters">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>420</y>
+       <width>1071</width>
+       <height>861</height>
+      </rect>
+     </property>
     </widget>
    </widget>
   </widget>
