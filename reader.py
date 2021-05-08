@@ -1,11 +1,12 @@
 import mangareader
 import requests
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup , element
 from PyQt4 import QtCore, QtGui
 import json
 from searchcard import SearchCardView
 from PIL import Image
 import hashlib
+import time
 
 class TestListModel(QtCore.QAbstractListModel):
     def __init__(self, parent=None):
@@ -46,10 +47,30 @@ class TestListModel(QtCore.QAbstractListModel):
             return QtCore.QVariant()
 
         if role == QtCore.Qt.SizeHintRole:
-            return QtCore.QSize(100, 50)
+            return QtCore.QSize(1070, 150)
 
     def columnCount(self, index):
         pass
+
+class Worker(QtCore.QObject):
+    start = QtCore.pyqtSignal(str)
+    load_chapters = QtCore.pyqtSignal(element.ResultSet)
+
+    @QtCore.pyqtSlot()
+    def processing_chapters( self, url):
+        hdr = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Charset': 'ISO-8859-1,utf-8;q=0.7,*;q=0.3',
+        'Accept-Encoding': 'none',
+        'Accept-Language': 'en-US,en;q=0.8',
+        'Connection': 'keep-alive'}
+        req = requests.get(url, headers=hdr)
+        soup = BeautifulSoup(req.text, 'html.parser')
+        preresult = soup.find('ul', attrs={'class':"row-content-chapter"})
+        results = preresult.find_all('li', attrs={'class':"a-h"})
+        self.load_chapters.emit(results)
+        print(len(results))
+    
 
 class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
  
@@ -63,6 +84,7 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
     lastsel2 = None
     searchresultslist = None
     tmp_index = 0
+    thread = None
     url = 'https://manganelo.tv/chapter/please_dont_bully_me_nagatoro/chapter_82'
     hdr = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
@@ -82,21 +104,21 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
         
         # get list of images from 1 chapter ###########
 
-        req = requests.get(self.url, headers=self.hdr)        
-        ## data = json.load(response)   
-        # print response.fp.read()
-        soup = BeautifulSoup(req.text, 'html.parser')
-        self.images = soup.find_all('img', attrs={'class':"img-loading"})
-        print self.images[0]['data-src']
+        # req = requests.get(self.url, headers=self.hdr)        
+        # ## data = json.load(response)   
+        # # print response.fp.read()
+        # soup = BeautifulSoup(req.text, 'html.parser')
+        # self.images = soup.find_all('img', attrs={'class':"img-loading"})
+        # print self.images[0]['data-src']
 
 
-        # load first image #################
+        # # load first image #################
 
-        self.image0 = requests.get(self.images[0]['data-src'],headers=self.hdr, stream=True)
-        image = QtGui.QImage()
-        image.loadFromData(self.image0.content)
+        # self.image0 = requests.get(self.images[0]['data-src'],headers=self.hdr, stream=True)
+        # image = QtGui.QImage()
+        # image.loadFromData(self.image0.content)
         
-        self.image.setPixmap(QtGui.QPixmap(image))
+        # self.image.setPixmap(QtGui.QPixmap(image))
 
         #buttons ###########
         self.next.clicked.connect(self.nextpage)
@@ -204,7 +226,6 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
                 myQCustomQWidget.setTextDown(author)
                 myQCustomQWidget.setIcon(icon)
                 myQCustomQWidget.setUrl(url)
-                
 
                 # Create QListWidgetItem
                 myQListWidgetItem = QtGui.QListWidgetItem(self.searchlist)
@@ -233,44 +254,31 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
         image = QtGui.QImage()
         image.loadFromData(infoimage0.content)
         self.infoimage.setPixmap(QtGui.QPixmap(image)) 
-        #self.infochapters.clear()
-        req = requests.get(url, headers=self.hdr)
-        ## data = json.load(response)   
-        # print response.fp.read()
-        soup = BeautifulSoup(req.text, 'html.parser')
-        preresult = soup.find('ul', attrs={'class':"row-content-chapter"})
-        results = preresult.find_all('li', attrs={'class':"a-h"})
+        try:
+         self.thread.terminate()
+         self.thread.wait()
+         self.infochapters.setModel(None)
+         self.infochapters.scrollToTop()
+        except Exception as e:
+         print e   
+            
+        self.worker = Worker()
+        self.thread = QtCore.QThread()
+        self.worker.moveToThread(self.thread) 
+        self.thread.started.connect(lambda: self.worker.processing_chapters(url))     
+        self.worker.load_chapters.connect(self.load_list)
+        self.thread.start()
+
+    @QtCore.pyqtSlot(element.ResultSet)
+    def load_list(self, results):
+        print('ok')
         if len(results) != 0:
             self.tmp_index = -1
-            # for result in results:
-            #     self.tmp_index += 1
-            #     url = result.find('a', attrs={'class':"chapter-name text-nowrap"})['href']
-            #     title = result.find('a', attrs={'class':"chapter-name text-nowrap"}).text
-            #     author = result.find('span', attrs={'class':"chapter-time text-nowrap"}).text
-            #     icon = ""
-            #     myQCustomQWidget = SearchCardView()
-            #     myQCustomQWidget.setTextUp(title)
-            #     myQCustomQWidget.setTextDown(author)
-            #     myQCustomQWidget.setIcon(icon)
-            #     myQCustomQWidget.setUrl(url)
-            #     myQCustomQWidget.setIndex(self.tmp_index)
-                
-
-            #     # Create QListWidgetItem
-            #     myQListWidgetItem2 = QtGui.QListWidgetItem(self.infochapters)
-            #     print(self.tmp_index)
-            #     myQListWidgetItem2.setData(2, (self.tmp_index,url))
-                
-                
-            #     # Set size hint
-            #     myQListWidgetItem2.setSizeHint(myQCustomQWidget.sizeHint())
-            #     # Add QListWidgetItem into QListWidget
-            #     self.infochapters.addItem(myQListWidgetItem2)
-            #     self.infochapters.setItemWidget(myQListWidgetItem2, myQCustomQWidget)
             model = TestListModel(self.infochapters)
             model.inputData(results)
-            self.infochapters.setModel(model)    
+            self.infochapters.setModel(model)   
             self.infochapters.clicked.connect(self.saveRes2)
+
 
     def saveRes2(self, index): 
         self.launchreader(self.infochapters.model().results[index.row()].find('a', attrs={'class':"chapter-name text-nowrap"})['href'])

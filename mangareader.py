@@ -27,6 +27,10 @@ class Ui_MainWindow(object):
         MainWindow.setObjectName(_fromUtf8("MainWindow"))
         MainWindow.setEnabled(True)
         MainWindow.resize(1076, 1350)
+        MainWindow.setStyleSheet(_fromUtf8("QScrollBar:vertical\n"
+" {\n"
+"     width: 80px;\n"
+" }"))
         self.stackedwidget = QtGui.QStackedWidget(MainWindow)
         self.stackedwidget.setObjectName(_fromUtf8("stackedwidget"))
         self.centralwidget = QtGui.QWidget()
@@ -71,7 +75,7 @@ class Ui_MainWindow(object):
         self.searchButton.setFont(font)
         self.searchButton.setObjectName(_fromUtf8("searchButton"))
         self.searchlist = QtGui.QListWidget(self.centralwidget2)
-        self.searchlist.setGeometry(QtCore.QRect(0, 130, 1071, 1000))
+        self.searchlist.setGeometry(QtCore.QRect(0, 130, 1071, 811))
         self.searchlist.setStyleSheet(_fromUtf8(""))
         self.searchlist.setObjectName(_fromUtf8("searchlist"))
         self.widget = QtGui.QWidget(self.centralwidget2)

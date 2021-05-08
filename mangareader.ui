@@ -16,6 +16,12 @@
   <property name="windowTitle">
    <string>L:A_N:application_ID:MangaReader</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true">QScrollBar:vertical
+ {
+     width: 80px;
+ }</string>
+  </property>
   <widget class="QStackedWidget" name="stackedwidget">
    <property name="currentIndex">
     <number>1</number>
@@ -142,7 +148,7 @@
        <x>0</x>
        <y>130</y>
        <width>1071</width>
-       <height>1000</height>
+       <height>811</height>
       </rect>
      </property>
      <property name="styleSheet">
