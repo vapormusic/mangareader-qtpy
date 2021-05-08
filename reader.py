@@ -256,7 +256,6 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
         self.infoimage.setPixmap(QtGui.QPixmap(image)) 
         try:
          self.thread.terminate()
-         self.thread.wait()
          self.infochapters.setModel(None)
          self.infochapters.scrollToTop()
         except Exception as e:
