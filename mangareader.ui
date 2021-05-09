@@ -9,7 +9,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1076</width>
+    <width>1072</width>
     <height>1350</height>
    </rect>
   </property>
@@ -23,21 +23,33 @@
  }</string>
   </property>
   <widget class="QStackedWidget" name="stackedwidget">
+   <property name="styleSheet">
+    <string notr="true"/>
+   </property>
    <property name="currentIndex">
     <number>1</number>
    </property>
    <widget class="QWidget" name="centralwidget">
+    <property name="styleSheet">
+     <string notr="true"/>
+    </property>
     <widget class="QPushButton" name="dockbutton">
      <property name="geometry">
       <rect>
        <x>0</x>
-       <y>1190</y>
+       <y>1140</y>
        <width>1072</width>
-       <height>91</height>
+       <height>141</height>
       </rect>
      </property>
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>80</height>
+      </size>
+     </property>
      <property name="text">
-      <string>PushButton</string>
+      <string/>
      </property>
      <property name="autoRepeatDelay">
       <number>299</number>
@@ -51,12 +63,12 @@
       <rect>
        <x>250</x>
        <y>0</y>
-       <width>951</width>
+       <width>831</width>
        <height>1190</height>
       </rect>
      </property>
      <property name="text">
-      <string>PushButton</string>
+      <string/>
      </property>
      <property name="flat">
       <bool>true</bool>
@@ -72,33 +84,206 @@
       </rect>
      </property>
      <property name="text">
-      <string>PushButton</string>
+      <string/>
      </property>
      <property name="flat">
       <bool>true</bool>
      </property>
     </widget>
-    <widget class="QLabel" name="image">
+    <widget class="QFrame" name="bg1">
      <property name="geometry">
       <rect>
        <x>0</x>
        <y>0</y>
-       <width>1072</width>
-       <height>1290</height>
+       <width>1071</width>
+       <height>1291</height>
       </rect>
      </property>
-     <property name="text">
-      <string/>
+     <property name="styleSheet">
+      <string notr="true">QWidget{
+   background-color: white
+}</string>
      </property>
-     <property name="pixmap">
-      <pixmap>../../../Downloads/download.png</pixmap>
+     <property name="frameShape">
+      <enum>QFrame::StyledPanel</enum>
      </property>
-     <property name="scaledContents">
+     <property name="frameShadow">
+      <enum>QFrame::Raised</enum>
+     </property>
+     <widget class="QLabel" name="image">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>1072</width>
+        <height>1290</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="pixmap">
+       <pixmap>../../../Downloads/download.png</pixmap>
+      </property>
+      <property name="scaledContents">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="dockbar" native="true">
+     <property name="enabled">
       <bool>true</bool>
      </property>
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>1180</y>
+       <width>1071</width>
+       <height>111</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QWidget{
+    background-color : white
+}
+
+QPushButton{
+    background-color: transparent;
+    border : 0;
+}</string>
+     </property>
+     <widget class="QWidget" name="layoutWidget_2">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>1071</width>
+        <height>82</height>
+       </rect>
+      </property>
+      <layout class="QGridLayout" name="gridLayout">
+       <item row="0" column="3">
+        <widget class="QPushButton" name="pushButton_4">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>80</height>
+          </size>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset>
+           <normaloff>light.png</normaloff>light.png</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>50</width>
+           <height>50</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QPushButton" name="prevchapterbt">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>80</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>80</height>
+          </size>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset>
+           <normaloff>left.png</normaloff>left.png</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>50</width>
+           <height>50</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QPushButton" name="nextchapterbt">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>80</height>
+          </size>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset>
+           <normaloff>right.png</normaloff>right.png</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>50</width>
+           <height>50</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="QPushButton" name="chapterlist">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>80</height>
+          </size>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset>
+           <normaloff>list.png</normaloff>list.png</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>50</width>
+           <height>50</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="4">
+        <widget class="QPushButton" name="pushButton_5">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>80</height>
+          </size>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+      </layout>
+      <zorder>pushButton_4</zorder>
+      <zorder>nextchapterbt</zorder>
+      <zorder>chapterlist</zorder>
+      <zorder>pushButton_5</zorder>
+      <zorder>prevchapterbt</zorder>
+     </widget>
     </widget>
-    <zorder>image</zorder>
+    <zorder>bg1</zorder>
     <zorder>dockbutton</zorder>
+    <zorder>dockbar</zorder>
     <zorder>next</zorder>
     <zorder>prev</zorder>
    </widget>
@@ -121,7 +306,10 @@
       </font>
      </property>
      <property name="text">
-      <string>Manga here</string>
+      <string/>
+     </property>
+     <property name="placeholderText">
+      <string>manga here</string>
      </property>
     </widget>
     <widget class="QPushButton" name="searchButton">
@@ -142,24 +330,11 @@
       <string>Search</string>
      </property>
     </widget>
-    <widget class="QListWidget" name="searchlist">
-     <property name="geometry">
-      <rect>
-       <x>0</x>
-       <y>130</y>
-       <width>1071</width>
-       <height>811</height>
-      </rect>
-     </property>
-     <property name="styleSheet">
-      <string notr="true"/>
-     </property>
-    </widget>
     <widget class="QWidget" name="widget" native="true">
      <property name="geometry">
       <rect>
-       <x>0</x>
-       <y>940</y>
+       <x>10</x>
+       <y>920</y>
        <width>1071</width>
        <height>351</height>
       </rect>
@@ -432,6 +607,9 @@ background-color: white;
              <height>80</height>
             </size>
            </property>
+           <property name="styleSheet">
+            <string notr="true"/>
+           </property>
            <property name="text">
             <string>shift</string>
            </property>
@@ -703,8 +881,43 @@ background-color: white;
       </layout>
      </widget>
     </widget>
+    <widget class="QWidget" name="bg2" native="true">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>-10</y>
+       <width>1081</width>
+       <height>1301</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QWidget{
+   background-color: white
+}</string>
+     </property>
+     <widget class="QListWidget" name="searchlist">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>140</y>
+        <width>1071</width>
+        <height>791</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true"/>
+      </property>
+     </widget>
+    </widget>
+    <zorder>bg2</zorder>
+    <zorder>mangaSearch</zorder>
+    <zorder>searchButton</zorder>
+    <zorder>widget</zorder>
    </widget>
    <widget class="QWidget" name="centralwidget3">
+    <property name="styleSheet">
+     <string notr="true"/>
+    </property>
     <widget class="QLabel" name="infoimage">
      <property name="geometry">
       <rect>
@@ -747,6 +960,25 @@ background-color: white;
       </rect>
      </property>
     </widget>
+    <widget class="QWidget" name="bg3" native="true">
+     <property name="geometry">
+      <rect>
+       <x>-1</x>
+       <y>-1</y>
+       <width>1081</width>
+       <height>1301</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QWidget{
+   background-color: white
+}</string>
+     </property>
+    </widget>
+    <zorder>bg3</zorder>
+    <zorder>infoimage</zorder>
+    <zorder>infotext</zorder>
+    <zorder>infochapters</zorder>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -754,7 +986,7 @@ background-color: white;
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1076</width>
+     <width>1072</width>
      <height>26</height>
     </rect>
    </property>

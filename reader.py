@@ -64,7 +64,7 @@ class Worker(QtCore.QObject):
         'Accept-Encoding': 'none',
         'Accept-Language': 'en-US,en;q=0.8',
         'Connection': 'keep-alive'}
-        req = requests.get(url, headers=hdr)
+        req = requests.get(url, headers=hdr, timeout = 15)
         soup = BeautifulSoup(req.text, 'html.parser')
         preresult = soup.find('ul', attrs={'class':"row-content-chapter"})
         results = preresult.find_all('li', attrs={'class':"a-h"})
@@ -85,6 +85,7 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
     searchresultslist = None
     tmp_index = 0
     thread = None
+    shiftbt = False
     url = 'https://manganelo.tv/chapter/please_dont_bully_me_nagatoro/chapter_82'
     hdr = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
@@ -96,15 +97,16 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
         super(Ui_MainWindowImpl, self).setupUi(MainWindow)
         self.next.setStyleSheet("border : 0; background-color: transparent;")
         self.prev.setStyleSheet("border : 0; background-color: transparent;")
+        self.dockbar.setVisible(False)
         #self.next.setVisible(False)
         #self.prev.setVisible(False)
         ## annoying pycui error fix
         MainWindow.setCentralWidget(self.stackedwidget)
-
+      
         
         # get list of images from 1 chapter ###########
 
-        # req = requests.get(self.url, headers=self.hdr)        
+        # req = requests.get(self.url, headers=self.hdr, timeout = 15)        
         # ## data = json.load(response)   
         # # print response.fp.read()
         # soup = BeautifulSoup(req.text, 'html.parser')
@@ -114,7 +116,7 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
 
         # # load first image #################
 
-        # self.image0 = requests.get(self.images[0]['data-src'],headers=self.hdr, stream=True)
+        # self.image0 = requests.get(self.images[0]['data-src'],headers=self.hdr, timeout = 15 stream=True)
         # image = QtGui.QImage()
         # image.loadFromData(self.image0.content)
         
@@ -127,6 +129,10 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
         self.actionComics.triggered.connect(self.searchpage_fun)
         self.actionReader.triggered.connect(self.readerpage_fun)
         self.searchButton.clicked.connect(self.querysearch)
+        self.prevchapterbt.clicked.connect(self.prev_chapter)
+        self.nextchapterbt.clicked.connect(self.next_chapter)
+        self.chapterlist.clicked.connect(self.chapterpage_fun)
+        self.dockbutton.clicked.connect(lambda: self.dockbar.setVisible(True))
 
         #self.tableWidget.setStyleSheet("""QTableWidget::item { font-size: 10pt }""")
         #self.tableWidget.mousePressEvent().connect(self.keyboardinput)
@@ -162,55 +168,86 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
         self.key_bksp.clicked.connect( lambda:self.kbinput('bksp'))
         self.key_shift.clicked.connect( lambda:self.kbinput('shift'))
         self.key_space.clicked.connect( lambda:self.kbinput('space'))
+        self.key_entr.clicked.connect( lambda:self.kbinput('enter'))
+        
 
     def nextpage(self):
-        if self.page < len(self.images) -1:
+        if self.dockbar.isVisible() :
+            self.dockbar.setVisible(False)
+            print 'ok'
+        else:    
+         if self.page < len(self.images) -1:
           self.page += 1
-          self.image0 = requests.get(self.images[self.page]['data-src'],headers=self.hdr)    
+          self.image0 = requests.get(self.images[self.page]['data-src'],headers=self.hdr, timeout = 15)    
           image = QtGui.QImage()
           image.loadFromData(self.image0.content)
           self.image.setPixmap(QtGui.QPixmap(image))
-        else:
-          if self.nextchapter_url != '' :
-            self.launchreader(self.nextchapter_url)
-          else:
-            QtGui.QMessageBox.about(QtGui.QMainWindow(), "L:A_N:application_ID:Last Chapter",
-            "<H1>Latest chapter!</H1>".decode("utf8"))      
+         else:
+          self.next_chapter()
     
 
 
     def prevpage(self):
-        if self.page > 0 :
+        if self.dockbar.isVisible() :
+            self.dockbar.setVisible(False)
+        else:   
+         if self.page > 0 :
           self.page += -1
-          self.image0 = requests.get(self.images[self.page]['data-src'],headers=self.hdr)    
+          self.image0 = requests.get(self.images[self.page]['data-src'],headers=self.hdr, timeout = 15)    
           image = QtGui.QImage()
           image.loadFromData(self.image0.content)
           self.image.setPixmap(QtGui.QPixmap(image))
-        else:
+         else:
+          self.prev_chapter()      
+
+    def next_chapter(self):
+          if self.nextchapter_url != '' :
+            self.launchreader(self.nextchapter_url)
+          else:
+            QtGui.QMessageBox.about(QtGui.QMainWindow(), "L:A_N:application_ID:Last Chapter",
+            "<H1>Latest chapter!</H1>".decode("utf8"))  
+
+    def prev_chapter(self):        
           if self.prevchapter_url != '':  
             print self.prevchapter_url          
             self.launchreader(self.prevchapter_url)
           else:
             QtGui.QMessageBox.about(QtGui.QMainWindow(), "L:A_N:application_ID:Last Chapter",
-            "<H1>First chapter!</H1>".decode("utf8"))      
+            "<H1>First chapter!</H1>".decode("utf8"))  
 
     def kbinput(self, char):
-        text = self.mangaSearch.text()
-        if len(char) == 1:   
-            text = str(text) + str(char).lower() 
-            self.mangaSearch.setText(text)
-        elif char == 'space':
-            text = str(text) + str(" ") 
-            self.mangaSearch.setText(text)
-        elif char == "bksp":
-            text = str(text)[:-1]
-            self.mangaSearch.setText(text)    
 
+        # text = self.mangaSearch.text()
+         if len(char) == 1:  
+            if self.shiftbt == True: 
+                char = char.upper()
+            key = QtGui.QKeyEvent(QtCore.QEvent.KeyPress,QtGui.QKeySequence.fromString(str(char))[0],QtCore.Qt.NoModifier,QtCore.QString(char))
+            QtCore.QCoreApplication.sendEvent(self.mangaSearch,key)
+         elif char == 'space':
+            key = QtGui.QKeyEvent(QtCore.QEvent.KeyPress,QtGui.QKeySequence.fromString(str(" "))[0],QtCore.Qt.NoModifier,QtCore.QString(str(" ")))
+            QtCore.QCoreApplication.sendEvent(self.mangaSearch,key)
+         elif char == "bksp":
+            key = QtGui.QKeyEvent(QtCore.QEvent.KeyPress,QtCore.Qt.Key_Backspace,QtCore.Qt.NoModifier)
+            QtCore.QCoreApplication.sendEvent(self.mangaSearch,key)  
+         elif char == "shift":
+            if self.shiftbt == True: 
+             self.shiftbt = False
+             self.key_shift.setStyleSheet("""""") 
+            else: 
+             self.shiftbt = True
+             self.key_shift.setStyleSheet("""QPushButton{background-color: black;color: white;}""")  
+         elif char == "enter":
+             self.querysearch() 
+
+    def setFlIntensity(self , level):
+        import os
+        os.system("lipc-set-prop com.lab126.powerd flIntensity "+ str(int(level)))
+        
     def querysearch(self):
         self.searchlist.clear()
         text = self.mangaSearch.text()
         linkurl = str('https://manganelo.tv/search/'+str(text))
-        req = requests.get(linkurl, headers=self.hdr)
+        req = requests.get(linkurl, headers=self.hdr, timeout = 15)
         ## data = json.load(response)   
         # print response.fp.read()
         soup = BeautifulSoup(req.text, 'html.parser')
@@ -250,7 +287,7 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
      
         self.stackedwidget.setCurrentIndex(2)
         self.infotext.setText(title)
-        infoimage0 = requests.get(icon,headers=self.hdr)    
+        infoimage0 = requests.get(icon,headers=self.hdr, timeout = 15)    
         image = QtGui.QImage()
         image.loadFromData(infoimage0.content)
         self.infoimage.setPixmap(QtGui.QPixmap(image)) 
@@ -296,7 +333,7 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
 
     def launchreader(self,url):
         self.url = url
-        req = requests.get(str('https://manganelo.tv')+ self.url, headers=self.hdr)        
+        req = requests.get(str('https://manganelo.tv')+ self.url, headers=self.hdr,  timeout = 15)        
         ## data = json.load(response)   
         # print response.fp.read()
         #def xstr(s):
@@ -319,7 +356,7 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
 
         # load first image #################
         self.page = 0
-        self.image0 = requests.get(self.images[0]['data-src'],headers=self.hdr, stream=True)
+        self.image0 = requests.get(self.images[0]['data-src'],headers=self.hdr, timeout = 15, stream=True)
         image = QtGui.QImage()
         image.loadFromData(self.image0.content)
         self.image0.close()
@@ -332,11 +369,16 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
         quit()   
 
     def searchpage_fun(self):
+        self.dockbar.setVisible(False)
         self.stackedwidget.setCurrentIndex(1)
         
     def readerpage_fun(self):
+        self.dockbar.setVisible(False)
         self.stackedwidget.setCurrentIndex(0)             
 
+    def chapterpage_fun(self):
+        self.dockbar.setVisible(False)
+        self.stackedwidget.setCurrentIndex(2)    
  
 
 if __name__ == "__main__":
