@@ -98,6 +98,7 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
         self.next.setStyleSheet("border : 0; background-color: transparent;")
         self.prev.setStyleSheet("border : 0; background-color: transparent;")
         self.dockbar.setVisible(False)
+        self.brightness_window.setVisible(False)
         #self.next.setVisible(False)
         #self.prev.setVisible(False)
         ## annoying pycui error fix
@@ -133,6 +134,17 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
         self.nextchapterbt.clicked.connect(self.next_chapter)
         self.chapterlist.clicked.connect(self.chapterpage_fun)
         self.dockbutton.clicked.connect(lambda: self.dockbar.setVisible(True))
+        self.brightnessbt.clicked.connect(self.getBrightness)
+        self.exitbrightness.clicked.connect(lambda: self.brightness_window.setVisible(False))
+        self.brightnessslider.valueChanged.connect(self.handleSlider)
+        self.brightnessslider.setMinimum(0)
+        self.brightnessslider.setMaximum(24)
+        self.brightnessslider.setTickInterval(1)
+        self.brightnessslider.setSingleStep(1)
+        self.minusbrightness.setStyleSheet(self.reducebrightness)
+        self.plusbrightness.setStyleSheet(self.increasebrightness)
+
+        
 
         #self.tableWidget.setStyleSheet("""QTableWidget::item { font-size: 10pt }""")
         #self.tableWidget.mousePressEvent().connect(self.keyboardinput)
@@ -170,7 +182,7 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
         self.key_space.clicked.connect( lambda:self.kbinput('space'))
         self.key_entr.clicked.connect( lambda:self.kbinput('enter'))
         
-
+    
     def nextpage(self):
         if self.dockbar.isVisible() :
             self.dockbar.setVisible(False)
@@ -238,6 +250,25 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
              self.key_shift.setStyleSheet("""QPushButton{background-color: black;color: white;}""")  
          elif char == "enter":
              self.querysearch() 
+
+    def increasebrightness(self):
+        val = int(self.brightnessslider.value())
+        if val < 24:
+            self.brightnessslider.setValue(val + 1)
+
+    def reducebrightness(self)
+        val = int(self.brightnessslider.value())
+        if val < 0:
+            self.brightnessslider.setValue(val - 1)
+
+    def getBrightness(self):
+        import subprocess
+        brightness_level = subprocess.check_output('lipc-get-prop com.lab126.powerd flIntensity', shell=True)
+        self.brightnessslider.setValue(int(brightness_level))
+        self.brightness_window.setVisible(True)         
+
+    def handleSlider(self, val):
+        self.setFlIntensity(val)        
 
     def setFlIntensity(self , level):
         import os
