@@ -70,7 +70,24 @@ class Worker(QtCore.QObject):
         results = preresult.find_all('li', attrs={'class':"a-h"})
         self.load_chapters.emit(results)
         print(len(results))
-    
+
+
+class MangaPageWorker(QtCore.QObject):
+    start = QtCore.pyqtSignal(str)
+    loadimage = QtCore.pyqtSignal(QtGui.QImage, str, int)
+
+    @QtCore.pyqtSlot()
+    def processing_image( self, images, page, url):
+        hdr = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Charset': 'ISO-8859-1,utf-8;q=0.7,*;q=0.3',
+        'Accept-Encoding': 'none',
+        'Accept-Language': 'en-US,en;q=0.8',
+        'Connection': 'keep-alive'}
+        image0 = requests.get(images[page]['data-src'],headers=hdr, timeout = 15)    
+        image = QtGui.QImage()
+        image.loadFromData(image0.content)
+        self.loadimage.emit(image, url, page)  
 
 class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
  
@@ -85,6 +102,7 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
     searchresultslist = None
     tmp_index = 0
     thread = None
+    thread2 = None
     shiftbt = False
     url = 'https://manganelo.tv/chapter/please_dont_bully_me_nagatoro/chapter_82'
     hdr = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11',
@@ -99,6 +117,7 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
         self.prev.setStyleSheet("border : 0; background-color: transparent;")
         self.dockbar.setVisible(False)
         self.brightness_window.setVisible(False)
+        self.pagedock.setVisible(False)
         #self.next.setVisible(False)
         #self.prev.setVisible(False)
         ## annoying pycui error fix
@@ -133,7 +152,7 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
         self.prevchapterbt.clicked.connect(self.prev_chapter)
         self.nextchapterbt.clicked.connect(self.next_chapter)
         self.chapterlist.clicked.connect(self.chapterpage_fun)
-        self.dockbutton.clicked.connect(lambda: self.dockbar.setVisible(True))
+        self.dockbutton.clicked.connect(self.showdock)
         self.brightnessbt.clicked.connect(self.getBrightness)
         self.exitbrightness.clicked.connect(lambda: self.brightness_window.setVisible(False))
         self.brightnessslider.valueChanged.connect(self.handleSlider)
@@ -141,8 +160,12 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
         self.brightnessslider.setMaximum(24)
         self.brightnessslider.setTickInterval(1)
         self.brightnessslider.setSingleStep(1)
-        self.minusbrightness.setStyleSheet(self.reducebrightness)
-        self.plusbrightness.setStyleSheet(self.increasebrightness)
+        self.pageslider.setMinimum(1)
+        self.pageslider.setTickInterval(1)
+        self.pageslider.setSingleStep(1)
+        self.minusbrightness.clicked.connect(self.reducebrightness)
+        self.plusbrightness.clicked.connect(self.increasebrightness)
+        self.pageslider.valueChanged.connect(self.pagechangeslider)
 
         
 
@@ -182,18 +205,39 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
         self.key_space.clicked.connect( lambda:self.kbinput('space'))
         self.key_entr.clicked.connect( lambda:self.kbinput('enter'))
         
-    
+        
+    def showdock(self):
+        self.dockbar.setVisible(True)
+        self.pagedock.setVisible(True)
+        self.pagecount.setText(str(int(self.page+1))+"/"+str(len(self.images)))
+        self.pageslider.setValue(int(self.page+1))
+        self.pageslider.setMaximum(int(len(self.images)))
+        
+
     def nextpage(self):
         if self.dockbar.isVisible() :
             self.dockbar.setVisible(False)
+            self.pagedock.setVisible(False)
             print 'ok'
         else:    
          if self.page < len(self.images) -1:
           self.page += 1
-          self.image0 = requests.get(self.images[self.page]['data-src'],headers=self.hdr, timeout = 15)    
-          image = QtGui.QImage()
-          image.loadFromData(self.image0.content)
-          self.image.setPixmap(QtGui.QPixmap(image))
+        #   self.image0 = requests.get(self.images[self.page]['data-src'],headers=self.hdr, timeout = 15)    
+        #   image = QtGui.QImage()
+        #   image.loadFromData(self.image0.content)
+        #   self.image.setPixmap(QtGui.QPixmap(image))
+          try:
+           self.thread2.terminate()
+          except Exception as e:
+           print e   
+            
+          self.worker2 = MangaPageWorker()
+          self.thread2 = QtCore.QThread()
+          self.worker2.moveToThread(self.thread2) 
+          self.thread2.started.connect(lambda: self.worker2.processing_image(self.images,self.page,self.url))     
+          self.worker2.loadimage.connect(self.display_image)
+          self.thread2.start()
+
          else:
           self.next_chapter()
     
@@ -202,13 +246,25 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
     def prevpage(self):
         if self.dockbar.isVisible() :
             self.dockbar.setVisible(False)
+            self.pagedock.setVisible(False)            
         else:   
          if self.page > 0 :
           self.page += -1
-          self.image0 = requests.get(self.images[self.page]['data-src'],headers=self.hdr, timeout = 15)    
-          image = QtGui.QImage()
-          image.loadFromData(self.image0.content)
-          self.image.setPixmap(QtGui.QPixmap(image))
+        #   self.image0 = requests.get(self.images[self.page]['data-src'],headers=self.hdr, timeout = 15)    
+        #   image = QtGui.QImage()
+        #   image.loadFromData(self.image0.content)
+        #   self.image.setPixmap(QtGui.QPixmap(image))
+          try:
+           self.thread2.terminate()
+          except Exception as e:
+           print e   
+            
+          self.worker2 = MangaPageWorker()
+          self.thread2 = QtCore.QThread()
+          self.worker2.moveToThread(self.thread2) 
+          self.thread2.started.connect(lambda: self.worker2.processing_image(self.images,self.page,self.url))     
+          self.worker2.loadimage.connect(self.display_image)
+          self.thread2.start()
          else:
           self.prev_chapter()      
 
@@ -256,9 +312,9 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
         if val < 24:
             self.brightnessslider.setValue(val + 1)
 
-    def reducebrightness(self)
+    def reducebrightness(self):
         val = int(self.brightnessslider.value())
-        if val < 0:
+        if val > 0:
             self.brightnessslider.setValue(val - 1)
 
     def getBrightness(self):
@@ -268,7 +324,27 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
         self.brightness_window.setVisible(True)         
 
     def handleSlider(self, val):
-        self.setFlIntensity(val)        
+        self.setFlIntensity(val)   
+
+    def pagechangeslider(self,val):
+        if val != self.page + 1:
+         self.page = int(val + 1)
+         self.pagecount.setText(str(int(val))+"/"+str(len(self.images)))
+        #  self.image0 = requests.get(self.images[self.page]['data-src'],headers=self.hdr, timeout = 15)    
+        #  image = QtGui.QImage()
+        #  image.loadFromData(self.image0.content)
+        #  self.image.setPixmap(QtGui.QPixmap(image))
+         try:
+           self.thread2.terminate()
+         except Exception as e:
+           print e   
+            
+         self.worker2 = MangaPageWorker()
+         self.thread2 = QtCore.QThread()
+         self.worker2.moveToThread(self.thread2) 
+         self.thread2.started.connect(lambda: self.worker2.processing_image(self.images,self.page,self.url))     
+         self.worker2.loadimage.connect(self.display_image)
+         self.thread2.start()         
 
     def setFlIntensity(self , level):
         import os
@@ -346,6 +422,11 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
             self.infochapters.setModel(model)   
             self.infochapters.clicked.connect(self.saveRes2)
 
+    @QtCore.pyqtSlot(QtGui.QImage, str, int)
+    def display_image(self, image, url, page):
+        if (self.url == url):
+            self.image.setPixmap(QtGui.QPixmap(image))     
+
 
     def saveRes2(self, index): 
         self.launchreader(self.infochapters.model().results[index.row()].find('a', attrs={'class':"chapter-name text-nowrap"})['href'])
@@ -401,15 +482,20 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
 
     def searchpage_fun(self):
         self.dockbar.setVisible(False)
+        self.pagedock.setVisible(False)
         self.stackedwidget.setCurrentIndex(1)
         
     def readerpage_fun(self):
         self.dockbar.setVisible(False)
+        self.pagedock.setVisible(False)
         self.stackedwidget.setCurrentIndex(0)             
 
     def chapterpage_fun(self):
         self.dockbar.setVisible(False)
-        self.stackedwidget.setCurrentIndex(2)    
+        self.pagedock.setVisible(False)
+        self.stackedwidget.setCurrentIndex(2) 
+
+       
  
 
 if __name__ == "__main__":

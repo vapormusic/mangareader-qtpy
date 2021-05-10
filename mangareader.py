@@ -70,7 +70,7 @@ class Ui_MainWindow(object):
         self.image.setObjectName(_fromUtf8("image"))
         self.dockbar = QtGui.QWidget(self.centralwidget)
         self.dockbar.setEnabled(True)
-        self.dockbar.setGeometry(QtCore.QRect(0, 1180, 1071, 111))
+        self.dockbar.setGeometry(QtCore.QRect(0, 0, 1071, 81))
         self.dockbar.setStyleSheet(_fromUtf8("QWidget{\n"
 "    background-color : white\n"
 "}\n"
@@ -140,9 +140,31 @@ class Ui_MainWindow(object):
         self.brightness_window.setObjectName(_fromUtf8("brightness_window"))
         self.brightnessslider = QtGui.QSlider(self.brightness_window)
         self.brightnessslider.setGeometry(QtCore.QRect(30, 80, 981, 22))
+        self.brightnessslider.setStyleSheet(_fromUtf8("QSlider::groove:horizontal { \n"
+"    background-color: white;\n"
+"    border: 1px solid #424242; \n"
+"    height: 10px; \n"
+"    border-radius: 4px;\n"
+"}\n"
+"\n"
+"QSlider::handle:horizontal { \n"
+"    background-color: black; \n"
+"    border: 2px solid black; \n"
+"    width: 16px; \n"
+"    height: 20px; \n"
+"    line-height: 20px; \n"
+"    margin-top: -5px; \n"
+"    margin-bottom: -5px; \n"
+"    border-radius: 10px; \n"
+"}\n"
+"\n"
+"QSlider::handle:horizontal:hover { \n"
+"    border-radius: 10px;\n"
+"}"))
+        self.brightnessslider.setMaximum(24)
         self.brightnessslider.setOrientation(QtCore.Qt.Horizontal)
         self.brightnessslider.setTickPosition(QtGui.QSlider.TicksAbove)
-        self.brightnessslider.setTickInterval(12)
+        self.brightnessslider.setTickInterval(1)
         self.brightnessslider.setObjectName(_fromUtf8("brightnessslider"))
         self.label = QtGui.QLabel(self.brightness_window)
         self.label.setGeometry(QtCore.QRect(430, 10, 261, 41))
@@ -159,12 +181,53 @@ class Ui_MainWindow(object):
         self.plusbrightness = QtGui.QPushButton(self.brightness_window)
         self.plusbrightness.setGeometry(QtCore.QRect(510, 140, 301, 61))
         self.plusbrightness.setObjectName(_fromUtf8("plusbrightness"))
+        self.pagedock = QtGui.QWidget(self.centralwidget)
+        self.pagedock.setGeometry(QtCore.QRect(0, 1220, 1071, 71))
+        self.pagedock.setObjectName(_fromUtf8("pagedock"))
+        self.widget_2 = QtGui.QWidget(self.pagedock)
+        self.widget_2.setGeometry(QtCore.QRect(0, 0, 1071, 80))
+        self.widget_2.setStyleSheet(_fromUtf8("QWidget{\n"
+"background-color: white;\n"
+"}"))
+        self.widget_2.setObjectName(_fromUtf8("widget_2"))
+        self.pagecount = QtGui.QLabel(self.widget_2)
+        self.pagecount.setGeometry(QtCore.QRect(22, 5, 111, 61))
+        self.pagecount.setObjectName(_fromUtf8("pagecount"))
+        self.pageslider = QtGui.QSlider(self.widget_2)
+        self.pageslider.setGeometry(QtCore.QRect(160, 30, 891, 22))
+        self.pageslider.setStyleSheet(_fromUtf8("QSlider::groove:horizontal { \n"
+"    background-color: white;\n"
+"    border: 1px solid #424242; \n"
+"    height: 10px; \n"
+"    border-radius: 4px;\n"
+"}\n"
+"\n"
+"QSlider::handle:horizontal { \n"
+"    background-color: black; \n"
+"    border: 2px solid black; \n"
+"    width: 16px; \n"
+"    height: 20px; \n"
+"    line-height: 20px; \n"
+"    margin-top: -5px; \n"
+"    margin-bottom: -5px; \n"
+"    border-radius: 10px; \n"
+"}\n"
+"\n"
+"QSlider::handle:horizontal:hover { \n"
+"    border-radius: 10px;\n"
+"}"))
+        self.pageslider.setMaximum(24)
+        self.pageslider.setOrientation(QtCore.Qt.Horizontal)
+        self.pageslider.setTickPosition(QtGui.QSlider.TicksAbove)
+        self.pageslider.setTickInterval(1)
+        self.pageslider.setObjectName(_fromUtf8("pageslider"))
         self.bg1.raise_()
         self.dockbutton.raise_()
-        self.dockbar.raise_()
         self.next.raise_()
         self.prev.raise_()
         self.brightness_window.raise_()
+        self.pagedock.raise_()
+        self.dockbar.raise_()
         self.stackedwidget.addWidget(self.centralwidget)
         self.centralwidget2 = QtGui.QWidget()
         self.centralwidget2.setEnabled(True)
@@ -426,7 +489,7 @@ class Ui_MainWindow(object):
         self.menubar.addAction(self.menuFile.menuAction())
 
         self.retranslateUi(MainWindow)
-        self.stackedwidget.setCurrentIndex(0)
+        self.stackedwidget.setCurrentIndex(1)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -435,6 +498,7 @@ class Ui_MainWindow(object):
         self.exitbrightness.setText(_translate("MainWindow", "OK", None))
         self.minusbrightness.setText(_translate("MainWindow", "-", None))
         self.plusbrightness.setText(_translate("MainWindow", "+", None))
+        self.pagecount.setText(_translate("MainWindow", "1/10", None))
         self.mangaSearch.setPlaceholderText(_translate("MainWindow", "manga here", None))
         self.searchButton.setText(_translate("MainWindow", "Search", None))
         self.key_q.setText(_translate("MainWindow", "q", None))

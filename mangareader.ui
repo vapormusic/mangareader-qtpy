@@ -27,7 +27,7 @@
     <string notr="true"/>
    </property>
    <property name="currentIndex">
-    <number>0</number>
+    <number>1</number>
    </property>
    <widget class="QWidget" name="centralwidget">
     <property name="styleSheet">
@@ -137,9 +137,9 @@
      <property name="geometry">
       <rect>
        <x>0</x>
-       <y>1180</y>
+       <y>0</y>
        <width>1071</width>
-       <height>111</height>
+       <height>81</height>
       </rect>
      </property>
      <property name="styleSheet">
@@ -304,6 +304,32 @@ QPushButton{
         <height>22</height>
        </rect>
       </property>
+      <property name="styleSheet">
+       <string notr="true">QSlider::groove:horizontal { 
+	background-color: white;
+	border: 1px solid #424242; 
+	height: 10px; 
+	border-radius: 4px;
+}
+
+QSlider::handle:horizontal { 
+	background-color: black; 
+	border: 2px solid black; 
+	width: 16px; 
+	height: 20px; 
+	line-height: 20px; 
+	margin-top: -5px; 
+	margin-bottom: -5px; 
+	border-radius: 10px; 
+}
+
+QSlider::handle:horizontal:hover { 
+	border-radius: 10px;
+}</string>
+      </property>
+      <property name="maximum">
+       <number>24</number>
+      </property>
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
       </property>
@@ -311,7 +337,7 @@ QPushButton{
        <enum>QSlider::TicksAbove</enum>
       </property>
       <property name="tickInterval">
-       <number>12</number>
+       <number>1</number>
       </property>
      </widget>
      <widget class="QLabel" name="label">
@@ -372,12 +398,96 @@ QPushButton{
       </property>
      </widget>
     </widget>
+    <widget class="QWidget" name="pagedock" native="true">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>1220</y>
+       <width>1071</width>
+       <height>71</height>
+      </rect>
+     </property>
+     <widget class="QWidget" name="widget_2" native="true">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>1071</width>
+        <height>80</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QWidget{
+background-color: white;
+}</string>
+      </property>
+      <widget class="QLabel" name="pagecount">
+       <property name="geometry">
+        <rect>
+         <x>22</x>
+         <y>5</y>
+         <width>111</width>
+         <height>61</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>1/10</string>
+       </property>
+      </widget>
+      <widget class="QSlider" name="pageslider">
+       <property name="geometry">
+        <rect>
+         <x>160</x>
+         <y>30</y>
+         <width>891</width>
+         <height>22</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QSlider::groove:horizontal { 
+	background-color: white;
+	border: 1px solid #424242; 
+	height: 10px; 
+	border-radius: 4px;
+}
+
+QSlider::handle:horizontal { 
+	background-color: black; 
+	border: 2px solid black; 
+	width: 16px; 
+	height: 20px; 
+	line-height: 20px; 
+	margin-top: -5px; 
+	margin-bottom: -5px; 
+	border-radius: 10px; 
+}
+
+QSlider::handle:horizontal:hover { 
+	border-radius: 10px;
+}</string>
+       </property>
+       <property name="maximum">
+        <number>24</number>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="tickPosition">
+        <enum>QSlider::TicksAbove</enum>
+       </property>
+       <property name="tickInterval">
+        <number>1</number>
+       </property>
+      </widget>
+     </widget>
+    </widget>
     <zorder>bg1</zorder>
     <zorder>dockbutton</zorder>
-    <zorder>dockbar</zorder>
     <zorder>next</zorder>
     <zorder>prev</zorder>
     <zorder>brightness_window</zorder>
+    <zorder>pagedock</zorder>
+    <zorder>dockbar</zorder>
    </widget>
    <widget class="QWidget" name="centralwidget2">
     <property name="enabled">
