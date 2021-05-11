@@ -104,6 +104,7 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
     thread = None
     thread2 = None
     shiftbt = False
+    worker2 = None
     url = 'https://manganelo.tv/chapter/please_dont_bully_me_nagatoro/chapter_82'
     hdr = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
@@ -116,12 +117,13 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
         self.next.setStyleSheet("border : 0; background-color: transparent;")
         self.prev.setStyleSheet("border : 0; background-color: transparent;")
         self.dockbar.setVisible(False)
-        self.brightness_window.setVisible(False)
+        self.ok.setVisible(True)
         self.pagedock.setVisible(False)
+        self.brightness_window.setVisible(False)
         #self.next.setVisible(False)
         #self.prev.setVisible(False)
         ## annoying pycui error fix
-        MainWindow.setCentralWidget(self.stackedwidget)
+        MainWindow.setCentralWidget(self.ok)
       
         
         # get list of images from 1 chapter ###########
@@ -166,6 +168,17 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
         self.minusbrightness.clicked.connect(self.reducebrightness)
         self.plusbrightness.clicked.connect(self.increasebrightness)
         self.pageslider.valueChanged.connect(self.pagechangeslider)
+        self.searchbt.clicked.connect(self.searchpage_fun)
+        self.exitbt.clicked.connect(self.actionQuit_fun)
+
+        self.readerbt.clicked.connect(self.readerpage_fun)
+        self.brightnessbt2.clicked.connect(self.getBrightness)
+        self.exitbt2.clicked.connect(self.actionQuit_fun)
+
+        self.readerbt3.clicked.connect(self.readerpage_fun)
+        self.searchbt3.clicked.connect(self.searchpage_fun)
+        self.brightnessbt3.clicked.connect(self.getBrightness)
+        self.exitbt3.clicked.connect(self.actionQuit_fun)
 
         
 
@@ -211,7 +224,12 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
         self.pagedock.setVisible(True)
         self.pagecount.setText(str(int(self.page+1))+"/"+str(len(self.images)))
         self.pageslider.setValue(int(self.page+1))
+        print self.page
         self.pageslider.setMaximum(int(len(self.images)))
+
+    def showbrightness(self):
+        self.brightness_window.setVisible(True)
+        self.ok2.setVisible(True)    
         
 
     def nextpage(self):
@@ -318,10 +336,13 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
             self.brightnessslider.setValue(val - 1)
 
     def getBrightness(self):
-        import subprocess
-        brightness_level = subprocess.check_output('lipc-get-prop com.lab126.powerd flIntensity', shell=True)
-        self.brightnessslider.setValue(int(brightness_level))
-        self.brightness_window.setVisible(True)         
+        if self.brightness_window.isVisible() == False:
+         import subprocess
+         brightness_level = subprocess.check_output('lipc-get-prop com.lab126.powerd flIntensity', shell=True)
+         self.brightnessslider.setValue(int(brightness_level))
+         self.brightness_window.setVisible(True) 
+        else:  self.brightness_window.setVisible(False) 
+      
 
     def handleSlider(self, val):
         self.setFlIntensity(val)   
@@ -336,6 +357,10 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
         #  self.image.setPixmap(QtGui.QPixmap(image))
          try:
            self.thread2.terminate()
+           self.thread2.deleteLater()
+           self.worker2.deleteLater()
+           self.thread2 = None
+           self.worker2 = None
          except Exception as e:
            print e   
             
