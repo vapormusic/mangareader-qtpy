@@ -8,13 +8,18 @@ A Kindle Online Manga Reader for PW3 (should be ok on KV and PW4)
 ## Installation
 
 Download : https://github.com/vapormusic/mangareader-qtpy/releases
+
 Install NiLuJe's Python 2.7 package from his [snapshots](https://www.mobileread.com/forums/showthread.php?t=225030)
+
 Merge the /python folder on the root of your Kindle Drive with the contents of python.zip
+
 Copy the contents of reader.zip to the extensions folder
 
 ## Thanks
 @NiLuJe for his python 2.7 build on Kindles
+
 Debian Jessie for PyQt4 bindings
+
 @bonito7 for making the guide for PyQt4 on Kindle
 
 ## Contributing
