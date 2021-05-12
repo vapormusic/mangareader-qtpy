@@ -36,7 +36,7 @@
      <string notr="true"/>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>3</number>
     </property>
     <widget class="QWidget" name="centralwidget">
      <property name="styleSheet">
@@ -165,8 +165,8 @@ QPushButton{
       <widget class="QWidget" name="layoutWidget">
        <property name="geometry">
         <rect>
-         <x>1</x>
-         <y>1</y>
+         <x>2</x>
+         <y>2</y>
          <width>1071</width>
          <height>102</height>
         </rect>
@@ -294,7 +294,7 @@ QPushButton{
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="exitbt">
+         <widget class="QPushButton" name="bookmarkbt">
           <property name="minimumSize">
            <size>
             <width>0</width>
@@ -306,12 +306,35 @@ QPushButton{
           </property>
           <property name="icon">
            <iconset>
-            <normaloff>exit.png</normaloff>exit.png</iconset>
+            <normaloff>bookmarkoff.png</normaloff>bookmarkoff.png</iconset>
           </property>
           <property name="iconSize">
            <size>
-            <width>50</width>
-            <height>50</height>
+            <width>60</width>
+            <height>60</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="homebt">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>100</height>
+           </size>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>home.png</normaloff>home.png</iconset>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>60</width>
+            <height>60</height>
            </size>
           </property>
          </widget>
@@ -1050,7 +1073,7 @@ background-color: white;
       <widget class="QWidget" name="widget_3" native="true">
        <property name="geometry">
         <rect>
-         <x>0</x>
+         <x>1</x>
          <y>10</y>
          <width>1072</width>
          <height>101</height>
@@ -1065,16 +1088,45 @@ QPushButton{
  border : 0px
 }</string>
        </property>
-       <widget class="QWidget" name="layoutWidget_2">
+       <widget class="QWidget" name="layoutWidget">
         <property name="geometry">
          <rect>
-          <x>0</x>
+          <x>-3</x>
           <y>0</y>
           <width>1071</width>
           <height>102</height>
          </rect>
         </property>
         <layout class="QHBoxLayout" name="horizontalLayout_6">
+         <item>
+          <widget class="QPushButton" name="homebt2">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>90</height>
+            </size>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">QPushButton{
+    background-color:transparent
+
+}</string>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="icon">
+            <iconset>
+             <normaloff>home.png</normaloff>home.png</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>55</width>
+             <height>55</height>
+            </size>
+           </property>
+          </widget>
+         </item>
          <item>
           <widget class="QPushButton" name="readerbt">
            <property name="minimumSize">
@@ -1334,10 +1386,207 @@ QPushButton{
         <string>TextLabel</string>
        </property>
       </widget>
+      <widget class="QPushButton" name="bookmarkbt2">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>250</y>
+         <width>341</width>
+         <height>61</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QWidget{
+   border: 2px solid #000000;
+}</string>
+       </property>
+       <property name="text">
+        <string>Add to bookmarks</string>
+       </property>
+      </widget>
      </widget>
      <zorder>bg3</zorder>
      <zorder>infoimage</zorder>
      <zorder>infochapters</zorder>
+    </widget>
+    <widget class="QWidget" name="centralwidget4">
+     <property name="styleSheet">
+      <string notr="true">QWidget{
+    background-color: white;
+}</string>
+     </property>
+     <widget class="QWidget" name="widget_5" native="true">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>1072</width>
+        <height>83</height>
+       </rect>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QWidget{
+border: 2px solid #000000
+}
+
+QPushButton{
+  border: 0px
+}</string>
+      </property>
+      <widget class="QWidget" name="layoutWidget_3">
+       <property name="geometry">
+        <rect>
+         <x>1</x>
+         <y>0</y>
+         <width>1071</width>
+         <height>82</height>
+        </rect>
+       </property>
+       <layout class="QHBoxLayout" name="horizontalLayout_8">
+        <item>
+         <widget class="QPushButton" name="readerbt3_2">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>80</height>
+           </size>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>book.png</normaloff>book.png</iconset>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>50</width>
+            <height>50</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="searchbt3_2">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>80</height>
+           </size>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>search.png</normaloff>search.png</iconset>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>50</width>
+            <height>50</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="brightnessbt3_2">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>80</height>
+           </size>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>light.png</normaloff>light.png</iconset>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>50</width>
+            <height>50</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="exitbt3_2">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>80</height>
+           </size>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>exit.png</normaloff>exit.png</iconset>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>50</width>
+            <height>50</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+     <widget class="QListView" name="bookmarklist">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>140</y>
+        <width>1071</width>
+        <height>1141</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_2">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>90</y>
+        <width>291</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Bookmarks</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="no_bookmark">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>150</y>
+        <width>1041</width>
+        <height>171</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>12</pointsize>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QLabel{
+  text-align: center;
+}</string>
+      </property>
+      <property name="text">
+       <string>You can add your mangas via the search mode</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
     </widget>
    </widget>
    <widget class="QWidget" name="brightness_window" native="true">
@@ -1484,6 +1733,7 @@ border :0}</string>
     <addaction name="actionExit"/>
     <addaction name="actionComics"/>
     <addaction name="actionReader"/>
+    <addaction name="actionHome"/>
    </widget>
    <addaction name="menuFile"/>
   </widget>
@@ -1501,6 +1751,11 @@ border :0}</string>
   <action name="actionReader">
    <property name="text">
     <string>Reader</string>
+   </property>
+  </action>
+  <action name="actionHome">
+   <property name="text">
+    <string>Home</string>
    </property>
   </action>
  </widget>

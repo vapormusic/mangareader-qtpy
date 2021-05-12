@@ -8,6 +8,11 @@ from PIL import Image
 import hashlib
 import time
 
+try:
+    _fromUtf8 = QtCore.QString.fromUtf8
+except AttributeError:
+    def _fromUtf8(s):
+        return s
 class TestListModel(QtCore.QAbstractListModel):
     def __init__(self, parent=None):
         QtCore.QAbstractListModel.__init__(self, parent)
@@ -52,6 +57,50 @@ class TestListModel(QtCore.QAbstractListModel):
     def columnCount(self, index):
         pass
 
+class TestListModel2(QtCore.QAbstractListModel):
+    def __init__(self, parent=None):
+        QtCore.QAbstractListModel.__init__(self, parent)
+        self.list = parent
+        self.results = []
+
+    def inputData(self,results):
+        self.results = results    
+
+    def rowCount(self, index):
+        return len(self.results)
+
+    def data(self, index, role):
+        if role == QtCore.Qt.DisplayRole:
+            if not self.list.indexWidget(index):
+
+                title = str(self.results[index.row()][:str(self.results[index.row()]).rfind("y:_$W|~_:q")])
+                url = self.results[index.row()][len(title+"y:_$W|~_:q"):]
+                icon = ""
+                myQCustomQWidget = SearchCardView()
+                myQCustomQWidget.setTextUp(title)
+                myQCustomQWidget.setTextDown(url)
+                myQCustomQWidget.setIcon(icon)
+                myQCustomQWidget.setUrl("")
+                myQCustomQWidget.setIndex(index.row() -1)
+                print(index.row())
+
+                # # Create QListWidgetItem
+                # myQListWidgetItem2 = QtGui.QListWidgetItem(self.list)
+                # print(index.row() -1)
+                # myQListWidgetItem2.setData(2, (index.row() -1,url)) 
+                # # Set size hint
+                # myQListWidgetItem2.setSizeHint(myQCustomQWidget.sizeHint())
+                # # Add QListWidgetItem into QListWidget
+                # self.list.addItem(myQListWidgetItem2)
+                self.list.setIndexWidget(index, myQCustomQWidget)
+            return QtCore.QVariant()
+
+        if role == QtCore.Qt.SizeHintRole:
+            return QtCore.QSize(1070, 100)
+
+    def columnCount(self, index):
+        pass
+
 class Worker(QtCore.QObject):
     start = QtCore.pyqtSignal(str)
     load_chapters = QtCore.pyqtSignal(element.ResultSet)
@@ -90,10 +139,12 @@ class MangaPageWorker(QtCore.QObject):
         self.loadimage.emit(image, url, page)  
 
 class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
- 
+    tmpselectedname= None
+    selectedname= None
     image0 = None
     page = 0
     images = None
+    tmpurl = ""
     chapter_index = 0
     prevchapter_url = ''
     nextchapter_url = ''
@@ -105,6 +156,7 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
     thread2 = None
     shiftbt = False
     worker2 = None
+    bookmarks = []
     url = 'https://manganelo.tv/chapter/please_dont_bully_me_nagatoro/chapter_82'
     hdr = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
@@ -169,18 +221,26 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
         self.plusbrightness.clicked.connect(self.increasebrightness)
         self.pageslider.valueChanged.connect(self.pagechangeslider)
         self.searchbt.clicked.connect(self.searchpage_fun)
-        self.exitbt.clicked.connect(self.actionQuit_fun)
+        self.homebt.clicked.connect(self.homepage_fun)
 
         self.readerbt.clicked.connect(self.readerpage_fun)
         self.brightnessbt2.clicked.connect(self.getBrightness)
         self.exitbt2.clicked.connect(self.actionQuit_fun)
+        self.homebt2.clicked.connect(self.homepage_fun)
 
         self.readerbt3.clicked.connect(self.readerpage_fun)
         self.searchbt3.clicked.connect(self.searchpage_fun)
         self.brightnessbt3.clicked.connect(self.getBrightness)
         self.exitbt3.clicked.connect(self.actionQuit_fun)
 
+        self.readerbt3_2.clicked.connect(self.readerpage_fun)
+        self.searchbt3_2.clicked.connect(self.searchpage_fun)
+        self.brightnessbt3_2.clicked.connect(self.getBrightness)
+        self.exitbt3_2.clicked.connect(self.actionQuit_fun)
         
+        self.bookmarkbt.clicked.connect(self.addbookmark)
+        self.bookmarkbt2.clicked.connect(self.addbookmark2)
+        self.actionHome.triggered.connect(self.homepage_fun)
 
         #self.tableWidget.setStyleSheet("""QTableWidget::item { font-size: 10pt }""")
         #self.tableWidget.mousePressEvent().connect(self.keyboardinput)
@@ -217,9 +277,31 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
         self.key_shift.clicked.connect( lambda:self.kbinput('shift'))
         self.key_space.clicked.connect( lambda:self.kbinput('space'))
         self.key_entr.clicked.connect( lambda:self.kbinput('enter'))
+        try:
+         with open('bookmarks.txt') as f:
+           self.bookmarks = f.read().splitlines()
+         model = TestListModel2(self.bookmarklist)
+         model.inputData(self.bookmarks)
+         self.bookmarklist.setModel(model)       
+         if len(self.bookmarks) > 0:
+            self.no_bookmark.setVisible(False)
+         self.bookmarklist.clicked.connect(self.saveRes3)
+        except: 
+         pass      
         
         
     def showdock(self):
+        page = self.url[:self.url.rfind("/")]
+        name = self.selectedname
+        combined = name +"y:_$W|~_:q"+page
+        if combined in self.bookmarks:
+         icon5 = QtGui.QIcon()
+         icon5.addPixmap(QtGui.QPixmap(_fromUtf8("bookmarkoff.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+         self.bookmarkbt.setIcon(icon5)
+        else: 
+         icon5 = QtGui.QIcon()
+         icon5.addPixmap(QtGui.QPixmap(_fromUtf8("bookmarkon.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+         self.bookmarkbt.setIcon(icon5)
         self.dockbar.setVisible(True)
         self.pagedock.setVisible(True)
         self.pagecount.setText(str(int(self.page+1))+"/"+str(len(self.images)))
@@ -412,30 +494,64 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
        data = item.data(1).toPyObject()        
        if data != self.lastsel2:
         print(data)
+        self.tmpurl = data[0]
         url = str('https://manganelo.tv')+ data[0]
         title = data[1]
         author = data[2]
         icon = str('https://manganelo.tv')+ data[3]
-     
         self.stackedwidget.setCurrentIndex(2)
         self.infotext.setText(title)
         infoimage0 = requests.get(icon,headers=self.hdr, timeout = 15)    
         image = QtGui.QImage()
         image.loadFromData(infoimage0.content)
         self.infoimage.setPixmap(QtGui.QPixmap(image)) 
+        combined = title +"y:_$W|~_:q"+self.tmpurl
+        if combined in self.bookmarks:
+         self.bookmarkbt2.setText("Remove bookmarks")
+        else: 
+         self.bookmarkbt2.setText("Add to bookmarks")
         try:
          self.thread.terminate()
          self.infochapters.setModel(None)
          self.infochapters.scrollToTop()
         except Exception as e:
          print e   
-            
+        self.tmpselectedname = title   
         self.worker = Worker()
         self.thread = QtCore.QThread()
         self.worker.moveToThread(self.thread) 
         self.thread.started.connect(lambda: self.worker.processing_chapters(url))     
         self.worker.load_chapters.connect(self.load_list)
         self.thread.start()
+
+    def mangainfo2(self, rawurl, title):  
+       if (rawurl) != self.lastsel2:
+        self.lastsel2 = (rawurl)
+        self.bookmarkbt2.setText("Remove bookmarks")   
+        url = str('https://manganelo.tv')+ rawurl
+        print(url)
+        icon = str('https://manganelo.tv')+ rawurl.replace("/manga/","/mangaimage/")+".jpg"
+     
+        self.stackedwidget.setCurrentIndex(2)
+        self.infotext.setText(title)
+        infoimage0 = requests.get(icon,headers=self.hdr, timeout = 10)    
+        image = QtGui.QImage()
+        image.loadFromData(infoimage0.content)
+        self.infoimage.setPixmap(QtGui.QPixmap(image)) 
+        print "ok"
+        try:
+         self.thread.terminate()
+         self.infochapters.setModel(None)
+         self.infochapters.scrollToTop()
+        except Exception as e:
+         print e   
+        self.tmpselectedname = title   
+        self.worker = Worker()
+        self.thread = QtCore.QThread()
+        self.worker.moveToThread(self.thread) 
+        self.thread.started.connect(lambda: self.worker.processing_chapters(url))     
+        self.worker.load_chapters.connect(self.load_list)
+        self.thread.start()  
 
     @QtCore.pyqtSlot(element.ResultSet)
     def load_list(self, results):
@@ -456,14 +572,18 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
     def saveRes2(self, index): 
         self.launchreader(self.infochapters.model().results[index.row()].find('a', attrs={'class':"chapter-name text-nowrap"})['href'])
 
-
-        
+    def saveRes3(self,index):
+        title = self.bookmarklist.model().results[index.row()][:str(self.bookmarklist.model().results[index.row()]).rfind("y:_$W|~_:q")]
+        url = self.bookmarklist.model().results[index.row()][len(title+"y:_$W|~_:q"):]
+        print "oof"+url
+        self.mangainfo2(url,title)
 
     def saveRes(self, item): 
         print 'bruh'
         data = item.data(2).toPyObject() 
         if data != self.lastsel2:
           self.lastsel2 = data
+          print self.lastsel2
           data = item.data(2).toPyObject()     
           self.chapter_index = data[1]
           self.launchreader(data[1])
@@ -487,7 +607,7 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
         if next_element is not None : next_lk = next_element['href']        
         self.prevchapter_url = str(prev_lk)
         self.nextchapter_url = str(next_lk)
-
+        self.selectedname = self.tmpselectedname
         print self.prevchapter_url
         print self.nextchapter_url
 
@@ -500,10 +620,39 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
         self.image.setPixmap(QtGui.QPixmap(image))
         self.stackedwidget.setCurrentIndex(0)  
 
+    def addbookmark(self):
+        page = self.url[:self.url.rfind("/")].replace("/chapter/","/manga/")
+        name = self.selectedname
+        combined = name +"y:_$W|~_:q"+page
+        if combined in self.bookmarks:
+         icon5 = QtGui.QIcon()
+         icon5.addPixmap(QtGui.QPixmap(_fromUtf8("bookmarkoff.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+         self.bookmarkbt.setIcon(icon5)
+         self.bookmarks.remove(combined)
+        else: 
+         icon5 = QtGui.QIcon()
+         icon5.addPixmap(QtGui.QPixmap(_fromUtf8("bookmarkon.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+         self.bookmarkbt.setIcon(icon5)
+         self.bookmarks.append(combined)
 
+    def addbookmark2(self):
+        page = self.tmpurl
+        name = self.infotext.text()
+        print page
+        combined = name +"y:_$W|~_:q"+page
+        if combined in self.bookmarks:
+         self.bookmarkbt2.setText("Add to bookmarks")
+         self.bookmarks.remove(combined)
+        else: 
+         self.bookmarkbt2.setText("Remove bookmarks")
+         self.bookmarks.append(combined)
 
     def actionQuit_fun(self):
-        quit()   
+       with open('bookmarks.txt', 'w') as textfile:
+        for element in self.bookmarks:
+         textfile.write(element + "\n")
+        textfile.close()
+       quit()   
 
     def searchpage_fun(self):
         self.dockbar.setVisible(False)
@@ -518,7 +667,19 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
     def chapterpage_fun(self):
         self.dockbar.setVisible(False)
         self.pagedock.setVisible(False)
-        self.stackedwidget.setCurrentIndex(2) 
+        self.stackedwidget.setCurrentIndex(2)
+
+    def homepage_fun(self):
+        self.dockbar.setVisible(False)
+        self.pagedock.setVisible(False)
+        self.bookmarklist.setModel(None)
+        model = TestListModel2(self.bookmarklist)
+        model.inputData(self.bookmarks)
+        self.bookmarklist.setModel(model)       
+        self.bookmarklist.clicked.connect(self.saveRes3)
+        if len(self.bookmarks) > 0:
+            self.no_bookmark.setVisible(False)
+        self.stackedwidget.setCurrentIndex(3)        
 
        
  
