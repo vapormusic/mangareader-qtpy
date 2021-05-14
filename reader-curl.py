@@ -8,13 +8,8 @@ from PIL import Image
 import hashlib
 import time
 import requests_cache
-urls_expire_after = {
-    'manganelo.tv/manga': 300,
-    'manganelo.tv/mangaimages': 1800,
-    'cm.blazefast.co': 3600,
-    '*': 0,
-}
-requests_cache.install_cache('demo_cache',urls_expire_after=urls_expire_after)
+
+requests_cache.install_cache('demo_cache')
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
@@ -114,7 +109,7 @@ class Worker(QtCore.QObject):
 
     @QtCore.pyqtSlot()
     def processing_chapters( self, url):
-        #start = time.time()
+        start = time.time()
         hdr = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
         'Accept-Charset': 'ISO-8859-1,utf-8;q=0.7,*;q=0.3',
@@ -127,8 +122,8 @@ class Worker(QtCore.QObject):
         results = preresult.find_all('li', attrs={'class':"a-h"})
         self.load_chapters.emit(results)
         end = time.time()
-        #print(end - start)
-        #print(len(results))
+        print(end - start)
+        print(len(results))
 
 
 class MangaPageWorker(QtCore.QObject):
@@ -137,7 +132,7 @@ class MangaPageWorker(QtCore.QObject):
 
     @QtCore.pyqtSlot()
     def processing_image( self, images, page, url):
-        #start = time.time()
+        start = time.time()
         hdr = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
         'Accept-Charset': 'ISO-8859-1,utf-8;q=0.7,*;q=0.3',
@@ -148,8 +143,8 @@ class MangaPageWorker(QtCore.QObject):
         image = QtGui.QImage()
         image.loadFromData(image0.content)
         self.loadimage.emit(image, url, page) 
-        #end = time.time()
-        #print(end - start) 
+        end = time.time()
+        print(end - start) 
 
 class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
     tmpselectedname= None
