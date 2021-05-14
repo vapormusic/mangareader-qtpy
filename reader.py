@@ -7,7 +7,9 @@ from searchcard import SearchCardView
 from PIL import Image
 import hashlib
 import time
+import requests_cache
 
+requests_cache.install_cache('demo_cache')
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
@@ -107,6 +109,7 @@ class Worker(QtCore.QObject):
 
     @QtCore.pyqtSlot()
     def processing_chapters( self, url):
+        start = time.time()
         hdr = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
         'Accept-Charset': 'ISO-8859-1,utf-8;q=0.7,*;q=0.3',
@@ -118,6 +121,8 @@ class Worker(QtCore.QObject):
         preresult = soup.find('ul', attrs={'class':"row-content-chapter"})
         results = preresult.find_all('li', attrs={'class':"a-h"})
         self.load_chapters.emit(results)
+        end = time.time()
+        print(end - start)
         print(len(results))
 
 
@@ -127,6 +132,7 @@ class MangaPageWorker(QtCore.QObject):
 
     @QtCore.pyqtSlot()
     def processing_image( self, images, page, url):
+        start = time.time()
         hdr = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
         'Accept-Charset': 'ISO-8859-1,utf-8;q=0.7,*;q=0.3',
@@ -136,7 +142,9 @@ class MangaPageWorker(QtCore.QObject):
         image0 = requests.get(images[page]['data-src'],headers=hdr, timeout = 15)    
         image = QtGui.QImage()
         image.loadFromData(image0.content)
-        self.loadimage.emit(image, url, page)  
+        self.loadimage.emit(image, url, page) 
+        end = time.time()
+        print(end - start) 
 
 class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
     tmpselectedname= None
@@ -155,9 +163,10 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
     thread = None
     thread2 = None
     shiftbt = False
+    numbt = False
     worker2 = None
     bookmarks = []
-    url = 'https://manganelo.tv/chapter/please_dont_bully_me_nagatoro/chapter_82'
+    url = ''
     hdr = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
         'Accept-Charset': 'ISO-8859-1,utf-8;q=0.7,*;q=0.3',
@@ -241,42 +250,45 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
         self.bookmarkbt.clicked.connect(self.addbookmark)
         self.bookmarkbt2.clicked.connect(self.addbookmark2)
         self.actionHome.triggered.connect(self.homepage_fun)
+        self.homebt3.clicked.connect(self.homepage_fun)
 
         #self.tableWidget.setStyleSheet("""QTableWidget::item { font-size: 10pt }""")
         #self.tableWidget.mousePressEvent().connect(self.keyboardinput)
 
         #keyboard buttons ####### boilerplate
         
-        self.key_q.clicked.connect( lambda:self.kbinput('q'))
-        self.key_w.clicked.connect( lambda:self.kbinput('w'))
-        self.key_e.clicked.connect( lambda:self.kbinput('e'))
-        self.key_r.clicked.connect( lambda:self.kbinput('r'))
-        self.key_t.clicked.connect( lambda:self.kbinput('t'))
-        self.key_y.clicked.connect( lambda:self.kbinput('y'))
-        self.key_u.clicked.connect( lambda:self.kbinput('u'))
-        self.key_i.clicked.connect( lambda:self.kbinput('i'))
-        self.key_o.clicked.connect( lambda:self.kbinput('o'))
-        self.key_p.clicked.connect( lambda:self.kbinput('p'))
-        self.key_l.clicked.connect( lambda:self.kbinput('l'))
-        self.key_k.clicked.connect( lambda:self.kbinput('k'))
-        self.key_j.clicked.connect( lambda:self.kbinput('j'))
-        self.key_h.clicked.connect( lambda:self.kbinput('h'))
-        self.key_g.clicked.connect( lambda:self.kbinput('g'))
-        self.key_f.clicked.connect( lambda:self.kbinput('f'))
-        self.key_d.clicked.connect( lambda:self.kbinput('d'))
-        self.key_s.clicked.connect( lambda:self.kbinput('s'))
-        self.key_a.clicked.connect( lambda:self.kbinput('a'))
-        self.key_z.clicked.connect( lambda:self.kbinput('z'))
-        self.key_x.clicked.connect( lambda:self.kbinput('x'))
-        self.key_c.clicked.connect( lambda:self.kbinput('c'))
-        self.key_v.clicked.connect( lambda:self.kbinput('v'))
-        self.key_b.clicked.connect( lambda:self.kbinput('b'))
-        self.key_n.clicked.connect( lambda:self.kbinput('n'))
-        self.key_m.clicked.connect( lambda:self.kbinput('m'))
+        self.key_q.clicked.connect( lambda:self.kbinput(str(self.key_q.text().toUtf8())))
+        self.key_w.clicked.connect( lambda:self.kbinput(str(self.key_w.text().toUtf8())))
+        self.key_e.clicked.connect( lambda:self.kbinput(str(self.key_e.text().toUtf8())))
+        self.key_r.clicked.connect( lambda:self.kbinput(str(self.key_r.text().toUtf8())))
+        self.key_t.clicked.connect( lambda:self.kbinput(str(self.key_t.text().toUtf8())))
+        self.key_y.clicked.connect( lambda:self.kbinput(str(self.key_y.text().toUtf8())))
+        self.key_u.clicked.connect( lambda:self.kbinput(str(self.key_u.text().toUtf8())))
+        self.key_i.clicked.connect( lambda:self.kbinput(str(self.key_i.text().toUtf8())))
+        self.key_o.clicked.connect( lambda:self.kbinput(str(self.key_o.text().toUtf8())))
+        self.key_p.clicked.connect( lambda:self.kbinput(str(self.key_p.text().toUtf8())))
+        self.key_l.clicked.connect( lambda:self.kbinput(str(self.key_l.text().toUtf8())))
+        self.key_k.clicked.connect( lambda:self.kbinput(str(self.key_k.text().toUtf8())))
+        self.key_j.clicked.connect( lambda:self.kbinput(str(self.key_j.text().toUtf8())))
+        self.key_h.clicked.connect( lambda:self.kbinput(str(self.key_h.text().toUtf8())))
+        self.key_g.clicked.connect( lambda:self.kbinput(str(self.key_g.text().toUtf8())))
+        self.key_f.clicked.connect( lambda:self.kbinput(str(self.key_f.text().toUtf8())))
+        self.key_d.clicked.connect( lambda:self.kbinput(str(self.key_d.text().toUtf8())))
+        self.key_s.clicked.connect( lambda:self.kbinput(str(self.key_s.text().toUtf8())))
+        self.key_a.clicked.connect( lambda:self.kbinput(str(self.key_a.text().toUtf8())))
+        self.key_z.clicked.connect( lambda:self.kbinput(str(self.key_z.text().toUtf8())))
+        self.key_x.clicked.connect( lambda:self.kbinput(str(self.key_x.text().toUtf8())))
+        self.key_c.clicked.connect( lambda:self.kbinput(str(self.key_c.text().toUtf8())))
+        self.key_v.clicked.connect( lambda:self.kbinput(str(self.key_v.text().toUtf8())))
+        self.key_b.clicked.connect( lambda:self.kbinput(str(self.key_b.text().toUtf8())))
+        self.key_n.clicked.connect( lambda:self.kbinput(str(self.key_n.text().toUtf8())))
+        self.key_m.clicked.connect( lambda:self.kbinput(str(self.key_m.text().toUtf8())))
         self.key_bksp.clicked.connect( lambda:self.kbinput('bksp'))
         self.key_shift.clicked.connect( lambda:self.kbinput('shift'))
         self.key_space.clicked.connect( lambda:self.kbinput('space'))
         self.key_entr.clicked.connect( lambda:self.kbinput('enter'))
+        self.key_dotperiod.clicked.connect(lambda:self.kbinput(str(self.key_dotperiod.text())))
+        self.key_num.clicked.connect( lambda:self.kbinput('num'))
         try:
          with open('bookmarks.txt') as f:
            self.bookmarks = f.read().splitlines()
@@ -289,6 +301,10 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
         except: 
          pass      
         
+        if self.url == "":
+           self.readerbt.setVisible(False)
+           self.readerbt3.setVisible(False)
+           self.readerbt3_2.setVisible(False)        
         
     def showdock(self):
         page = self.url[:self.url.rfind("/")]
@@ -306,7 +322,7 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
         self.pagedock.setVisible(True)
         self.pagecount.setText(str(int(self.page+1))+"/"+str(len(self.images)))
         self.pageslider.setValue(int(self.page+1))
-        print self.page
+        print(self.page)
         self.pageslider.setMaximum(int(len(self.images)))
 
     def showbrightness(self):
@@ -318,7 +334,7 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
         if self.dockbar.isVisible() :
             self.dockbar.setVisible(False)
             self.pagedock.setVisible(False)
-            print 'ok'
+            print('ok')
         else:    
          if self.page < len(self.images) -1:
           self.page += 1
@@ -328,8 +344,12 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
         #   self.image.setPixmap(QtGui.QPixmap(image))
           try:
            self.thread2.terminate()
+           self.thread2.deleteLater()
+           self.worker2.deleteLater()
+           self.thread2 = None
+           self.worker2 = None           
           except Exception as e:
-           print e   
+           print(e)   
             
           self.worker2 = MangaPageWorker()
           self.thread2 = QtCore.QThread()
@@ -356,13 +376,17 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
         #   self.image.setPixmap(QtGui.QPixmap(image))
           try:
            self.thread2.terminate()
+           self.thread2.deleteLater()
+           self.worker2.deleteLater()
+           self.thread2 = None
+           self.worker2 = None  
           except Exception as e:
-           print e   
+           print(e)   
             
           self.worker2 = MangaPageWorker()
           self.thread2 = QtCore.QThread()
           self.worker2.moveToThread(self.thread2) 
-          self.thread2.started.connect(lambda: self.worker2.processing_image(self.images,self.page,self.url))     
+          self.thread2.started.connect(lambda: self.worker2.processing_image(self.images,self.page,self.url))  
           self.worker2.loadimage.connect(self.display_image)
           self.thread2.start()
          else:
@@ -377,7 +401,7 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
 
     def prev_chapter(self):        
           if self.prevchapter_url != '':  
-            print self.prevchapter_url          
+            print(self.prevchapter_url)        
             self.launchreader(self.prevchapter_url)
           else:
             QtGui.QMessageBox.about(QtGui.QMainWindow(), "L:A_N:application_ID:Last Chapter",
@@ -386,10 +410,13 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
     def kbinput(self, char):
 
         # text = self.mangaSearch.text()
-         if len(char) == 1:  
+         
+         if char.decode('utf-8') == u"\uFE60":
+            char = '&'
+         if len(char.decode('utf-8')) == 1:  
             if self.shiftbt == True: 
                 char = char.upper()
-            key = QtGui.QKeyEvent(QtCore.QEvent.KeyPress,QtGui.QKeySequence.fromString(str(char))[0],QtCore.Qt.NoModifier,QtCore.QString(char))
+            key = QtGui.QKeyEvent(QtCore.QEvent.KeyPress,QtGui.QKeySequence.fromString(str(char).decode('utf-8'))[0],QtCore.Qt.NoModifier,QtCore.QString(str(char).decode('utf-8')))
             QtCore.QCoreApplication.sendEvent(self.mangaSearch,key)
          elif char == 'space':
             key = QtGui.QKeyEvent(QtCore.QEvent.KeyPress,QtGui.QKeySequence.fromString(str(" "))[0],QtCore.Qt.NoModifier,QtCore.QString(str(" ")))
@@ -400,13 +427,155 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
          elif char == "shift":
             if self.shiftbt == True: 
              self.shiftbt = False
-             self.key_shift.setStyleSheet("""""") 
+             self.key_shift.setStyleSheet("""""")
+             self.key_q.setText('q')
+             self.key_w.setText('w')
+             self.key_e.setText('e')
+             self.key_r.setText('r')
+             self.key_t.setText('t')
+             self.key_y.setText('y')
+             self.key_u.setText('u')
+             self.key_i.setText('i')
+             self.key_o.setText('o')
+             self.key_p.setText('p')
+             self.key_l.setText('l')
+             self.key_k.setText('k')
+             self.key_j.setText('j')
+             self.key_h.setText('h')
+             self.key_g.setText('g')
+             self.key_f.setText('f')
+             self.key_d.setText('d')
+             self.key_s.setText('s')
+             self.key_a.setText('a')
+             self.key_z.setText('z')
+             self.key_x.setText('x')
+             self.key_c.setText('c')
+             self.key_v.setText('v')
+             self.key_b.setText('b')
+             self.key_n.setText('n')
+             self.key_m.setText('m')
             else: 
              self.shiftbt = True
-             self.key_shift.setStyleSheet("""QPushButton{background-color: black;color: white;}""")  
+             if self.numbt == False:
+              self.key_shift.setStyleSheet("""QPushButton{background-color: black;color: white;}""")  
+              self.key_q.setText('Q')
+              self.key_w.setText('W')
+              self.key_e.setText('E')
+              self.key_r.setText('R')
+              self.key_t.setText('T')
+              self.key_y.setText('Y')
+              self.key_u.setText('U')
+              self.key_i.setText('I')
+              self.key_o.setText('O')
+              self.key_p.setText('P')
+              self.key_l.setText('L')
+              self.key_k.setText('K')
+              self.key_j.setText('J')
+              self.key_h.setText('H')
+              self.key_g.setText('G')
+              self.key_f.setText('F')
+              self.key_d.setText('D')
+              self.key_s.setText('S')
+              self.key_a.setText('A')
+              self.key_z.setText('Z')
+              self.key_x.setText('X')
+              self.key_c.setText('C')
+              self.key_v.setText('V')
+              self.key_b.setText('B')
+              self.key_n.setText('N')
+              self.key_m.setText('M')
+             else:
+              self.key_q.setText('#')
+              self.key_w.setText('%')
+              self.key_e.setText('~')
+              self.key_r.setText('^')
+              self.key_t.setText('[')
+              self.key_y.setText(']')
+              self.key_u.setText('{')
+              self.key_i.setText('}')
+              self.key_o.setText('|')
+              self.key_p.setText("\\")
+              self.key_l.setText(u'\u00B7')
+              self.key_k.setText(u'\u2122')
+              self.key_j.setText(u'\u00AC')
+              self.key_h.setText('`')
+              self.key_g.setText('<')
+              self.key_f.setText('>')
+              self.key_d.setText('_')
+              self.key_s.setText('*')
+              self.key_a.setText('=')
+              self.key_z.setText(u'\u00A9')
+              self.key_x.setText(u'\u00AE')
+              self.key_c.setText(u'\u00A7')
+              self.key_v.setText(u'\u00A2')
+              self.key_b.setText(u'\u00A2')
+              self.key_n.setText(u'\u20AC')
+              self.key_m.setText(u'\u00A3')    
          elif char == "enter":
              self.querysearch() 
-
+         elif char == "num":    
+            if self.numbt == True:
+             self.shiftbt = False    
+             self.numbt = False
+             self.key_shift.setStyleSheet("""""")
+             self.key_num.setStyleSheet("""""")
+             self.key_q.setText('q')
+             self.key_w.setText('w')
+             self.key_e.setText('e')
+             self.key_r.setText('r')
+             self.key_t.setText('t')
+             self.key_y.setText('y')
+             self.key_u.setText('u')
+             self.key_i.setText('i')
+             self.key_o.setText('o')
+             self.key_p.setText('p')
+             self.key_l.setText('l')
+             self.key_k.setText('k')
+             self.key_j.setText('j')
+             self.key_h.setText('h')
+             self.key_g.setText('g')
+             self.key_f.setText('f')
+             self.key_d.setText('d')
+             self.key_s.setText('s')
+             self.key_a.setText('a')
+             self.key_z.setText('z')
+             self.key_x.setText('x')
+             self.key_c.setText('c')
+             self.key_v.setText('v')
+             self.key_b.setText('b')
+             self.key_n.setText('n')
+             self.key_m.setText('m')
+            else: 
+             self.shiftbt = False 
+             self.numbt = True
+             self.key_shift.setStyleSheet("""""") 
+             self.key_num.setStyleSheet("""QPushButton{background-color: black;color: white;}""")  
+             self.key_q.setText('1')
+             self.key_w.setText('2')
+             self.key_e.setText('3')
+             self.key_r.setText('4')
+             self.key_t.setText('5')
+             self.key_y.setText('6')
+             self.key_u.setText('7')
+             self.key_i.setText('8')
+             self.key_o.setText('9')
+             self.key_p.setText('0')
+             self.key_l.setText('$')
+             self.key_k.setText(u"\uFE60")
+             self.key_j.setText('(')
+             self.key_h.setText(')')
+             self.key_g.setText('"')
+             self.key_f.setText("'")
+             self.key_d.setText('-')
+             self.key_s.setText('+')
+             self.key_a.setText('/')
+             self.key_z.setText('@')
+             self.key_x.setText('!')
+             self.key_c.setText('?')
+             self.key_v.setText(':')
+             self.key_b.setText(';')
+             self.key_n.setText(',')
+             self.key_m.setText(u'\u2026')
     def increasebrightness(self):
         val = int(self.brightnessslider.value())
         if val < 24:
@@ -444,7 +613,7 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
            self.thread2 = None
            self.worker2 = None
          except Exception as e:
-           print e   
+           print(e)   
             
          self.worker2 = MangaPageWorker()
          self.thread2 = QtCore.QThread()
@@ -515,7 +684,7 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
          self.infochapters.setModel(None)
          self.infochapters.scrollToTop()
         except Exception as e:
-         print e   
+         print(e)   
         self.tmpselectedname = title   
         self.worker = Worker()
         self.thread = QtCore.QThread()
@@ -538,13 +707,13 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
         image = QtGui.QImage()
         image.loadFromData(infoimage0.content)
         self.infoimage.setPixmap(QtGui.QPixmap(image)) 
-        print "ok"
+        print("ok")
         try:
          self.thread.terminate()
          self.infochapters.setModel(None)
          self.infochapters.scrollToTop()
         except Exception as e:
-         print e   
+         print()   
         self.tmpselectedname = title   
         self.worker = Worker()
         self.thread = QtCore.QThread()
@@ -565,8 +734,11 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
 
     @QtCore.pyqtSlot(QtGui.QImage, str, int)
     def display_image(self, image, url, page):
+        start = time.time()
         if (self.url == url):
-            self.image.setPixmap(QtGui.QPixmap(image))     
+            self.image.setPixmap(QtGui.QPixmap(image))  
+        end = time.time()
+        print("il:" + str(end-start))       
 
 
     def saveRes2(self, index): 
@@ -575,15 +747,15 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
     def saveRes3(self,index):
         title = self.bookmarklist.model().results[index.row()][:str(self.bookmarklist.model().results[index.row()]).rfind("y:_$W|~_:q")]
         url = self.bookmarklist.model().results[index.row()][len(title+"y:_$W|~_:q"):]
-        print "oof"+url
+        print("oof"+url)
         self.mangainfo2(url,title)
 
     def saveRes(self, item): 
-        print 'bruh'
+        print('bruh')
         data = item.data(2).toPyObject() 
         if data != self.lastsel2:
           self.lastsel2 = data
-          print self.lastsel2
+          print(self.lastsel2)
           data = item.data(2).toPyObject()     
           self.chapter_index = data[1]
           self.launchreader(data[1])
@@ -608,8 +780,8 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
         self.prevchapter_url = str(prev_lk)
         self.nextchapter_url = str(next_lk)
         self.selectedname = self.tmpselectedname
-        print self.prevchapter_url
-        print self.nextchapter_url
+        print(self.prevchapter_url)
+        print(self.nextchapter_url)
 
         # load first image #################
         self.page = 0
@@ -638,7 +810,7 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
     def addbookmark2(self):
         page = self.tmpurl
         name = self.infotext.text()
-        print page
+        print(page)
         combined = name +"y:_$W|~_:q"+page
         if combined in self.bookmarks:
          self.bookmarkbt2.setText("Add to bookmarks")
@@ -658,16 +830,40 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
         self.dockbar.setVisible(False)
         self.pagedock.setVisible(False)
         self.stackedwidget.setCurrentIndex(1)
+        if self.url == "":
+           self.readerbt.setVisible(False)
+           self.readerbt3.setVisible(False)
+           self.readerbt3_2.setVisible(False)
+        else:
+           self.readerbt.setVisible(True)
+           self.readerbt3.setVisible(True)
+           self.readerbt3_2.setVisible(True)        
         
     def readerpage_fun(self):
         self.dockbar.setVisible(False)
         self.pagedock.setVisible(False)
-        self.stackedwidget.setCurrentIndex(0)             
+        self.stackedwidget.setCurrentIndex(0)
+        if self.url == "":
+           self.readerbt.setVisible(False)
+           self.readerbt3.setVisible(False)
+           self.readerbt3_2.setVisible(False)
+        else:
+           self.readerbt.setVisible(True)
+           self.readerbt3.setVisible(True)
+           self.readerbt3_2.setVisible(True)                     
 
     def chapterpage_fun(self):
         self.dockbar.setVisible(False)
         self.pagedock.setVisible(False)
         self.stackedwidget.setCurrentIndex(2)
+        if self.url == "":
+           self.readerbt.setVisible(False)
+           self.readerbt3.setVisible(False)
+           self.readerbt3_2.setVisible(False)
+        else:
+           self.readerbt.setVisible(True)
+           self.readerbt3.setVisible(True)
+           self.readerbt3_2.setVisible(True)                
 
     def homepage_fun(self):
         self.dockbar.setVisible(False)
