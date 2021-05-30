@@ -8,6 +8,7 @@ from PIL import Image
 import hashlib
 import time
 import requests_cache
+import AbstractMangaSource
 urls_expire_after = {
     'manganelo.tv/manga': 300,
     'manganelo.tv/mangaimages': 1800,
@@ -35,9 +36,9 @@ class TestListModel(QtCore.QAbstractListModel):
     def data(self, index, role):
         if role == QtCore.Qt.DisplayRole:
             if not self.list.indexWidget(index):
-                url = self.results[index.row() ].find('a', attrs={'class':"chapter-name text-nowrap"})['href']
-                title = self.results[index.row() ].find('a', attrs={'class':"chapter-name text-nowrap"}).text
-                author = self.results[index.row() ].find('span', attrs={'class':"chapter-time text-nowrap"}).text
+                url = self.results[index.row() ].getUrl()
+                title = self.results[index.row() ].getTitle()
+                author = self.results[index.row() ].getAuthor()
                 icon = ""
                 myQCustomQWidget = SearchCardView()
                 myQCustomQWidget.setTextUp(title)
@@ -110,7 +111,7 @@ class TestListModel2(QtCore.QAbstractListModel):
 
 class Worker(QtCore.QObject):
     start = QtCore.pyqtSignal(str)
-    load_chapters = QtCore.pyqtSignal(element.ResultSet)
+    load_chapters = QtCore.pyqtSignal(list)
 
     @QtCore.pyqtSlot()
     def processing_chapters( self, url):
@@ -121,11 +122,7 @@ class Worker(QtCore.QObject):
         'Accept-Encoding': 'none',
         'Accept-Language': 'en-US,en;q=0.8',
         'Connection': 'keep-alive'}
-        req = requests.get(url, headers=hdr, timeout = 15)
-        soup = BeautifulSoup(req.text, 'html.parser')
-        preresult = soup.find('ul', attrs={'class':"row-content-chapter"})
-        results = preresult.find_all('li', attrs={'class':"a-h"})
-        self.load_chapters.emit(results)
+        self.load_chapters.emit(AbstractMangaSource.AbstractMangaSource.listchapters(url))
         end = time.time()
         #print(end - start)
         #print(len(results))
@@ -171,6 +168,8 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
     numbt = False
     worker2 = None
     bookmarks = []
+    tmpmanga = ""
+    selmanga = ""
     url = ''
     hdr = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
@@ -348,19 +347,20 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
         #   image.loadFromData(self.image0.content)
         #   self.image.setPixmap(QtGui.QPixmap(image))
           try:
-           self.thread2.terminate()
-           self.thread2.deleteLater()
-           self.worker2.deleteLater()
-           self.thread2 = None
-           self.worker2 = None           
+        #    self.thread2.terminate()
+        #    self.thread2.deleteLater()
+        #    self.worker2.deleteLater()
+        #    self.thread2 = None
+        #    self.worker2 = None     
+            pass      
           except Exception as e:
            print(e)   
             
           self.worker2 = MangaPageWorker()
           self.thread2 = QtCore.QThread()
+          self.worker2.loadimage.connect(self.display_image)
           self.worker2.moveToThread(self.thread2) 
           self.thread2.started.connect(lambda: self.worker2.processing_image(self.images,self.page,self.url))     
-          self.worker2.loadimage.connect(self.display_image)
           self.thread2.start()
 
          else:
@@ -379,14 +379,14 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
         #   image = QtGui.QImage()
         #   image.loadFromData(self.image0.content)
         #   self.image.setPixmap(QtGui.QPixmap(image))
-          try:
-           self.thread2.terminate()
-           self.thread2.deleteLater()
-           self.worker2.deleteLater()
-           self.thread2 = None
-           self.worker2 = None  
-          except Exception as e:
-           print(e)   
+        #   try:
+        #    self.thread2.terminate()
+        #    self.thread2.deleteLater()
+        #    self.worker2.deleteLater()
+        #    self.thread2 = None
+        #    self.worker2 = None  
+        #   except Exception as e:
+        #    print(e)   
             
           self.worker2 = MangaPageWorker()
           self.thread2 = QtCore.QThread()
@@ -611,14 +611,14 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
         #  image = QtGui.QImage()
         #  image.loadFromData(self.image0.content)
         #  self.image.setPixmap(QtGui.QPixmap(image))
-         try:
-           self.thread2.terminate()
-           self.thread2.deleteLater()
-           self.worker2.deleteLater()
-           self.thread2 = None
-           self.worker2 = None
-         except Exception as e:
-           print(e)   
+        #  try:
+        #    self.thread2.terminate()
+        #    self.thread2.deleteLater()
+        #    self.worker2.deleteLater()
+        #    self.thread2 = None
+        #    self.worker2 = None
+        #  except Exception as e:
+        #    print(e)   
             
          self.worker2 = MangaPageWorker()
          self.thread2 = QtCore.QThread()
@@ -633,25 +633,26 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
         
     def querysearch(self):
         self.searchlist.clear()
+        
         text = self.mangaSearch.text()
-        linkurl = str('https://manganelo.tv/search/'+str(text))
-        req = requests.get(linkurl, headers=self.hdr, timeout = 15)
-        ## data = json.load(response)   
-        # print response.fp.read()
-        soup = BeautifulSoup(req.text, 'html.parser')
-        results = soup.find_all('div', attrs={'class':"search-story-item"})   
+
+        # linkurl = str('https://manganelo.tv/search/'+str(text))
+        # req = requests.get(linkurl, headers=self.hdr, timeout = 15)
+        # ## data = json.load(response)   
+        # # print response.fp.read()
+        # soup = BeautifulSoup(req.text, 'html.parser')
+        results = AbstractMangaSource.AbstractMangaSource.getSearchResult(text)  
         if len(results) != 0:
             for result in results:
-                url = result.find('a', attrs={'class':"item-img"})['href']
-                title = result.find('a', attrs={'class':"item-img"})['title'] 
-                author = result.find('span', attrs={'class':"text-nowrap item-author"})['title']
-                icon = result.find('img', attrs={'class':"img-loading"})['src']
+                url = result.getUrl()
+                title = result.getTitle()
+                author = result.getAuthor()
+                icon = result.getIcon()
                 myQCustomQWidget = SearchCardView()
                 myQCustomQWidget.setTextUp(title)
                 myQCustomQWidget.setTextDown(author)
                 myQCustomQWidget.setIcon(icon)
                 myQCustomQWidget.setUrl(url)
-
                 # Create QListWidgetItem
                 myQListWidgetItem = QtGui.QListWidgetItem(self.searchlist)
                 data = (url , title, author, icon)
@@ -661,18 +662,19 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
                 # Add QListWidgetItem into QListWidget
                 self.searchlist.addItem(myQListWidgetItem)
                 self.searchlist.setItemWidget(myQListWidgetItem, myQCustomQWidget)
+            
             self.searchlist.itemClicked.connect(self.mangainfo)
-
+            self.searchlist.scrollToTop()
 
     def mangainfo(self, item):
        data = item.data(1).toPyObject()        
        if data != self.lastsel2:
         print(data)
         self.tmpurl = data[0]
-        url = str('https://manganelo.tv')+ data[0]
+        url =  data[0]
         title = data[1]
         author = data[2]
-        icon = str('https://manganelo.tv')+ data[3]
+        icon = data[3]
         self.stackedwidget.setCurrentIndex(2)
         self.infotext.setText(title)
         infoimage0 = requests.get(icon,headers=self.hdr, timeout = 15)    
@@ -702,9 +704,9 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
        if (rawurl) != self.lastsel2:
         self.lastsel2 = (rawurl)
         self.bookmarkbt2.setText("Remove bookmarks")   
-        url = str('https://manganelo.tv')+ rawurl
+        url = rawurl
         print(url)
-        icon = str('https://manganelo.tv')+ rawurl.replace("/manga/","/mangaimage/")+".jpg"
+        icon = AbstractMangaSource.AbstractMangaSource.getIconFromUrl(url)
      
         self.stackedwidget.setCurrentIndex(2)
         self.infotext.setText(title)
@@ -727,7 +729,7 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
         self.worker.load_chapters.connect(self.load_list)
         self.thread.start()  
 
-    @QtCore.pyqtSlot(element.ResultSet)
+    @QtCore.pyqtSlot(list)
     def load_list(self, results):
         print('ok')
         if len(results) != 0:
@@ -747,7 +749,7 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
 
 
     def saveRes2(self, index): 
-        self.launchreader(self.infochapters.model().results[index.row()].find('a', attrs={'class':"chapter-name text-nowrap"})['href'])
+        self.launchreader(self.infochapters.model().results[index.row()].getUrl())
 
     def saveRes3(self,index):
         title = self.bookmarklist.model().results[index.row()][:str(self.bookmarklist.model().results[index.row()]).rfind("y:_$W|~_:q")]
@@ -767,17 +769,22 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
 
     def launchreader(self,url):
         self.url = url
-        req = requests.get(str('https://manganelo.tv')+ self.url, headers=self.hdr,  timeout = 15)        
-        ## data = json.load(response)   
-        # print response.fp.read()
-        #def xstr(s):
-        #    if s is None:
-        #       return ''
-        #    return str(s)
-        soup = BeautifulSoup(req.text, 'html.parser')
-        self.images = soup.find_all('img', attrs={'class':"img-loading"})
-        prev_element = soup.find('a', attrs={'class':"navi-change-chapter-btn-prev a-h"})
-        next_element = soup.find('a', attrs={'class':"navi-change-chapter-btn-next a-h"})
+        # req = requests.get(str('https://manganelo.tv')+ self.url, headers=self.hdr,  timeout = 15)        
+        # ## data = json.load(response)   
+        # # print response.fp.read()
+        # #def xstr(s):
+        # #    if s is None:
+        # #       return ''
+        # #    return str(s)
+        # soup = BeautifulSoup(req.text, 'html.parser')
+        # self.images = soup.find_all('img', attrs={'class':"img-loading"})
+        # prev_element = soup.find('a', attrs={'class':"navi-change-chapter-btn-prev a-h"})
+        # next_element = soup.find('a', attrs={'class':"navi-change-chapter-btn-next a-h"})
+        result = AbstractMangaSource.AbstractMangaSource.listchapterimages(url)
+        self.selmanga = self.tmpurl
+        self.images = result[0]
+        prev_element = result[1]
+        next_element = result[2]
         prev_lk = ''
         next_lk = ''
         if prev_element is not None : prev_lk = prev_element['href']
@@ -787,7 +794,6 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
         self.selectedname = self.tmpselectedname
         print(self.prevchapter_url)
         print(self.nextchapter_url)
-
         # load first image #################
         self.page = 0
         self.image0 = requests.get(self.images[0]['data-src'],headers=self.hdr, timeout = 15, stream=True)
@@ -797,8 +803,9 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
         self.image.setPixmap(QtGui.QPixmap(image))
         self.stackedwidget.setCurrentIndex(0)  
 
+
     def addbookmark(self):
-        page = self.url[:self.url.rfind("/")].replace("/chapter/","/manga/")
+        page = self.selmanga
         name = self.selectedname
         combined = name +"y:_$W|~_:q"+page
         if combined in self.bookmarks:
