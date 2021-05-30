@@ -9,10 +9,12 @@ import hashlib
 import time
 import requests_cache
 import AbstractMangaSource
+import mangasources
 urls_expire_after = {
     'manganelo.tv/manga': 300,
     'manganelo.tv/mangaimages': 1800,
     'cm.blazefast.co': 3600,
+    'nhanhtruyen.net': 3600,
     '*': 0,
 }
 requests_cache.install_cache('demo_cache',urls_expire_after=urls_expire_after)
@@ -140,8 +142,12 @@ class MangaPageWorker(QtCore.QObject):
         'Accept-Charset': 'ISO-8859-1,utf-8;q=0.7,*;q=0.3',
         'Accept-Encoding': 'none',
         'Accept-Language': 'en-US,en;q=0.8',
-        'Connection': 'keep-alive'}
-        image0 = requests.get(images[page]['data-src'],headers=hdr, timeout = 15)    
+        'Connection': 'keep-alive', 'Referer': 'http://www.nettruyentop.com/'}
+        image0 = None
+        try:
+         image0 = requests.get(images[page]['data-src'],headers=hdr, timeout = 15)
+        except: 
+         image0 = requests.get(images[page]['src'],headers=hdr, timeout = 15)        
         image = QtGui.QImage()
         image.loadFromData(image0.content)
         self.loadimage.emit(image, url, page) 
@@ -170,13 +176,15 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
     bookmarks = []
     tmpmanga = ""
     selmanga = ""
+    currentsource = "manganelo"
     url = ''
     hdr = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
         'Accept-Charset': 'ISO-8859-1,utf-8;q=0.7,*;q=0.3',
         'Accept-Encoding': 'none',
         'Accept-Language': 'en-US,en;q=0.8',
-        'Connection': 'keep-alive'}
+        'Connection': 'keep-alive',
+        'Referer': 'http://www.nettruyentop.com/'}
     def setupUi(self, MainWindow):
         super(Ui_MainWindowImpl, self).setupUi(MainWindow)
         self.next.setStyleSheet("border : 0; background-color: transparent;")
@@ -293,6 +301,9 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
         self.key_entr.clicked.connect( lambda:self.kbinput('enter'))
         self.key_dotperiod.clicked.connect(lambda:self.kbinput(str(self.key_dotperiod.text())))
         self.key_num.clicked.connect( lambda:self.kbinput('num'))
+
+        self.comicselector.addItems(mangasources.sourcelist.manga_sites())
+        self.comicselector.currentIndexChanged.connect(self.new_sources)
         try:
          with open('bookmarks.txt') as f:
            self.bookmarks = f.read().splitlines()
@@ -309,7 +320,12 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
            self.readerbt.setVisible(False)
            self.readerbt3.setVisible(False)
            self.readerbt3_2.setVisible(False)        
-        
+
+    def new_sources(self):
+        print(str(self.comicselector.currentText()))
+        self.currentsource = str(self.comicselector.currentText())
+        self.querysearch()
+
     def showdock(self):
         page = self.url[:self.url.rfind("/")]
         name = self.selectedname
@@ -632,16 +648,18 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
         os.system("lipc-set-prop com.lab126.powerd flIntensity "+ str(int(level)))
         
     def querysearch(self):
-        self.searchlist.clear()
+      self.searchlist.clear()
+      text = self.mangaSearch.text()
+      if len(text)> 1:  
         
-        text = self.mangaSearch.text()
 
         # linkurl = str('https://manganelo.tv/search/'+str(text))
         # req = requests.get(linkurl, headers=self.hdr, timeout = 15)
         # ## data = json.load(response)   
         # # print response.fp.read()
         # soup = BeautifulSoup(req.text, 'html.parser')
-        results = AbstractMangaSource.AbstractMangaSource.getSearchResult(text)  
+        print self.currentsource
+        results = AbstractMangaSource.AbstractMangaSource.getSearchResult(self.currentsource,text)  
         if len(results) != 0:
             for result in results:
                 url = result.getUrl()
@@ -710,10 +728,11 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
      
         self.stackedwidget.setCurrentIndex(2)
         self.infotext.setText(title)
-        infoimage0 = requests.get(icon,headers=self.hdr, timeout = 10)    
-        image = QtGui.QImage()
-        image.loadFromData(infoimage0.content)
-        self.infoimage.setPixmap(QtGui.QPixmap(image)) 
+        if icon != "":
+         infoimage0 = requests.get(icon,headers=self.hdr, timeout = 10)    
+         image = QtGui.QImage()
+         image.loadFromData(infoimage0.content)
+         self.infoimage.setPixmap(QtGui.QPixmap(image)) 
         print("ok")
         try:
          self.thread.terminate()
@@ -796,7 +815,10 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
         print(self.nextchapter_url)
         # load first image #################
         self.page = 0
-        self.image0 = requests.get(self.images[0]['data-src'],headers=self.hdr, timeout = 15, stream=True)
+        try:
+         self.image0 = requests.get(self.images[0]['data-src'],headers=self.hdr, timeout = 15, stream=True)
+        except: 
+         self.image0 = requests.get(self.images[0]['src'],headers=self.hdr, timeout = 15, stream=True)    
         image = QtGui.QImage()
         image.loadFromData(self.image0.content)
         self.image0.close()

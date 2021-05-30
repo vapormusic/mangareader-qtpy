@@ -478,7 +478,7 @@ QSlider::handle:horizontal:hover {
       <widget class="QPushButton" name="searchButton">
        <property name="geometry">
         <rect>
-         <x>440</x>
+         <x>430</x>
          <y>190</y>
          <width>151</width>
          <height>41</height>
@@ -1199,6 +1199,16 @@ background-color: white;
          </item>
         </layout>
        </widget>
+      </widget>
+      <widget class="QComboBox" name="comicselector">
+       <property name="geometry">
+        <rect>
+         <x>800</x>
+         <y>190</y>
+         <width>251</width>
+         <height>41</height>
+        </rect>
+       </property>
       </widget>
      </widget>
     </widget>

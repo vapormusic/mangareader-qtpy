@@ -2,9 +2,8 @@ import mangasources
 class AbstractMangaSource:
   
     @staticmethod
-    def getSearchResult(text):
-        for site in mangasources.sourcelist.manga_sites():
-         return getattr(mangasources, site).getSearchResult(text)
+    def getSearchResult(current_source, text):
+         return getattr(mangasources, str(current_source)).getSearchResult(text)
         
     @staticmethod
     def listchapters(url):
@@ -23,3 +22,9 @@ class AbstractMangaSource:
         for site in mangasources.sourcelist.manga_sites():   
          if site in url: 
           return getattr(mangasources, site).getmangaiconfromurl(url)
+
+    @staticmethod
+    def getHeader(url):
+        for site in mangasources.sourcelist.manga_sites():   
+         if site in url: 
+          return getattr(mangasources, site).getCustomHeader()            
