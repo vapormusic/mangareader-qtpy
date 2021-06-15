@@ -1,4 +1,4 @@
-import mangareader
+import GetDeviceModel
 import requests
 from bs4 import BeautifulSoup , element
 from PyQt4 import QtCore, QtGui
@@ -10,6 +10,7 @@ import time
 import requests_cache
 import AbstractMangaSource
 import mangasources
+from PIL.ImageQt import ImageQt
 urls_expire_after = {
     'manganelo.tv/manga': 300,
     'manganelo.tv/mangaimages': 1800,
@@ -23,6 +24,25 @@ try:
 except AttributeError:
     def _fromUtf8(s):
         return s
+try:
+    model = GetDeviceModel.getmodel()
+
+    print model
+    if model != None:
+     if model.find("KindleOasis") != -1:
+      import mangareader_oasis as mangareader
+     elif model == "KindlePaperWhite" or model == "KindlePaperWhite2":
+      print "Unsupported PW1 or PW2"
+      exit() 
+     elif model.find("KindlePaperWhite") != -1 or model.find("KindleVoyage") != -1:
+      import mangareader as mangareader
+     else :
+      print "Unsupported"
+      exit()         
+except Exception as e:
+    import mangareader as mangareader
+    print(e) 
+    pass            
 class TestListModel(QtCore.QAbstractListModel):
     def __init__(self, parent=None):
         QtCore.QAbstractListModel.__init__(self, parent)
@@ -729,10 +749,12 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
         self.stackedwidget.setCurrentIndex(2)
         self.infotext.setText(title)
         if icon != "":
-         infoimage0 = requests.get(icon,headers=self.hdr, timeout = 10)    
-         image = QtGui.QImage()
-         image.loadFromData(infoimage0.content)
-         self.infoimage.setPixmap(QtGui.QPixmap(image)) 
+         try:   
+          infoimage0 = requests.get(icon,headers=self.hdr, timeout = 10)    
+          image = QtGui.QImage()
+          image.loadFromData(infoimage0.content)
+          self.infoimage.setPixmap(QtGui.QPixmap(image)) 
+         except: pass 
         print("ok")
         try:
          self.thread.terminate()
@@ -762,7 +784,8 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
     def display_image(self, image, url, page):
         start = time.time()
         if (self.url == url):
-            self.image.setPixmap(QtGui.QPixmap(image))  
+            self.image.setPixmap(QtGui.QPixmap(image).scaled(self.image.size(), QtCore.Qt.KeepAspectRatio))  
+            self.image.setAlignment(QtCore.Qt.AlignCenter)
         end = time.time()
         print("il:" + str(end-start))       
 
@@ -822,7 +845,7 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
         image = QtGui.QImage()
         image.loadFromData(self.image0.content)
         self.image0.close()
-        self.image.setPixmap(QtGui.QPixmap(image))
+        self.image.setPixmap(QtGui.QPixmap(image).scaled(self.image.size(), QtCore.Qt.KeepAspectRatio))  
         self.stackedwidget.setCurrentIndex(0)  
 
 

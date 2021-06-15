@@ -69,7 +69,7 @@ class Ui_MainWindow(object):
         self.image.setGeometry(QtCore.QRect(0, 0, 1072, 1290))
         self.image.setText(_fromUtf8(""))
         self.image.setPixmap(QtGui.QPixmap(_fromUtf8("../../../Downloads/download.png")))
-        self.image.setScaledContents(True)
+        self.image.setScaledContents(False)
         self.image.setObjectName(_fromUtf8("image"))
         self.dockbar = QtGui.QWidget(self.centralwidget)
         self.dockbar.setEnabled(True)
