@@ -24,7 +24,7 @@ class AbstractMangaSource:
           return getattr(mangasources, site).getmangaiconfromurl(url)
 
     @staticmethod
-    def getHeader(url):
+    def getImageHeader(url):
         for site in mangasources.sourcelist.manga_sites():   
          if site in url: 
-          return getattr(mangasources, site).getCustomHeader()            
+          return getattr(mangasources, site).getImageHeader()

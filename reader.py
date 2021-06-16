@@ -161,17 +161,15 @@ class MangaPageWorker(QtCore.QObject):
     @QtCore.pyqtSlot()
     def processing_image( self, images, page, url):
         #start = time.time()
-        hdr = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        'Accept-Charset': 'ISO-8859-1,utf-8;q=0.7,*;q=0.3',
-        'Accept-Encoding': 'none',
-        'Accept-Language': 'en-US,en;q=0.8',
-        'Connection': 'keep-alive', 'Referer': 'http://www.nettruyentop.com/'}
+        hdr = AbstractMangaSource.AbstractMangaSource.getImageHeader(url)
         image0 = None
         try:
          image0 = requests.get(images[page]['data-src'],headers=hdr, timeout = 15)
         except: 
-         image0 = requests.get(images[page]['src'],headers=hdr, timeout = 15)        
+         try:   
+          image0 = requests.get(images[page]['src'],headers=hdr, timeout = 15, stream=True)
+         except: 
+          image0 = requests.get(images[page],headers=hdr, timeout = 15)    
         image = QtGui.QImage()
         image.loadFromData(image0.content)
         self.loadimage.emit(image, url, page) 
@@ -209,6 +207,7 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
         'Accept-Language': 'en-US,en;q=0.8',
         'Connection': 'keep-alive',
         'Referer': 'http://www.nettruyentop.com/'}
+      
     def setupUi(self, MainWindow):
         super(Ui_MainWindowImpl, self).setupUi(MainWindow)
         self.next.setStyleSheet("border : 0; background-color: transparent;")
@@ -842,10 +841,14 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
         print(self.nextchapter_url)
         # load first image #################
         self.page = 0
+        self.hdr = AbstractMangaSource.AbstractMangaSource.getImageHeader(url)
         try:
          self.image0 = requests.get(self.images[0]['data-src'],headers=self.hdr, timeout = 15, stream=True)
         except: 
-         self.image0 = requests.get(self.images[0]['src'],headers=self.hdr, timeout = 15, stream=True)    
+         try:   
+          self.image0 = requests.get(self.images[0]['src'],headers=self.hdr, timeout = 15, stream=True)
+         except: 
+          self.image0 = requests.get(self.images[0],headers=self.hdr, timeout = 15, stream=True)        
         image = QtGui.QImage()
         image.loadFromData(self.image0.content)
         self.image0.close()

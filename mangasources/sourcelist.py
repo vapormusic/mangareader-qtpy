@@ -1,2 +1,2 @@
 def manga_sites() :
-    return ['manganelo','nettruyen']
+    return ['manganelo','nettruyen','mangahere']
