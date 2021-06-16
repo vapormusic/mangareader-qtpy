@@ -29,14 +29,18 @@ try:
 
     print model
     if model != None:
-     if model.find("KindleOasis") != -1:
-      import mangareader_oasis as mangareader
-     elif model == "KindlePaperWhite" or model == "KindlePaperWhite2":
+     if model == "KindlePaperWhite" or model == "KindlePaperWhite2":
+      # 212 ppi, 6 inch, 1024*768   - not supported for now
       print "Unsupported PW1 or PW2"
-      exit() 
-     elif model.find("KindlePaperWhite") != -1 or model.find("KindleVoyage") != -1:
+      exit()
+     elif model.find("KindlePaperWhite") != -1 or model.find("KindleVoyage") != -1 or model == ("KindleOasis") :
+      # 300 ppi , 6 inch , 1448*1072
       import mangareader as mangareader
+     elif model.find("KindleOasis") != -1:
+      # 300 ppi, 7-inch, 1680*1264   
+      import mangareader_oasis as mangareader 
      else :
+      # rest should be 167 ppi , 800*600    
       print "Unsupported"
       exit()         
 except Exception as e:
