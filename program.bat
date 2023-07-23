@@ -1,1 +1,1 @@
-pyuic4 C:\Users\vieta\OneDrive\Documents\mangareader\mangareader.ui -o mangareader.py
+c:/Python27/python.exe -c"import PyQt4.uic.pyuic" F:\mangareader-qtpy\mangareader.ui -o mangareader.py

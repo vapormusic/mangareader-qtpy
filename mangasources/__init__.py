@@ -6,3 +6,4 @@ import sourcelist as sourcelist
 import manganelo as manganelo
 import nettruyen as nettruyen
 import mangahere as mangahere
+import mangadex as mangadex

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'C:\Users\vieta\OneDrive\Documents\mangareader\mangareader.ui'
+# Form implementation generated from reading ui file 'F:\mangareader-qtpy\mangareader.ui'
 #
 # Created by: PyQt4 UI code generator 4.11.4
 #
