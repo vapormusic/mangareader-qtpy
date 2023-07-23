@@ -14,7 +14,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>L:A_N:application_ID:MangaReader</string>
+   <string>L:A_N:application_ID:MangaReader_PC:N</string>
   </property>
   <property name="styleSheet">
    <string notr="true">QScrollBar:vertical

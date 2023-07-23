@@ -713,7 +713,7 @@ class Ui_MainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(_translate("MainWindow", "L:A_N:application_ID:MangaReader", None))
+        MainWindow.setWindowTitle(_translate("MainWindow", "L:A_N:application_ID:MangaReader_PC:N", None))
         self.pagecount.setText(_translate("MainWindow", "1/10", None))
         self.searchButton.setText(_translate("MainWindow", "Search", None))
         self.mangaSearch.setPlaceholderText(_translate("MainWindow", "manga here", None))
