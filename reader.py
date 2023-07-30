@@ -17,6 +17,7 @@ urls_expire_after = {
     'cm.blazefast.co': 3600,
     'nhanhtruyen.net': 3600,
     'api.mangadex.org': 0,
+    'mangapill.com': 0,
     '*': 0,
 }
 requests_cache.install_cache('demo_cache',urls_expire_after=urls_expire_after)
@@ -720,15 +721,18 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
         icon = data[3]
         self.stackedwidget.setCurrentIndex(2)
         self.infotext.setText(title)
+        self.hdr = AbstractMangaSource.AbstractMangaSource.getImageHeader(url)
+        print("icon",icon, self.hdr)
         infoimage0 = requests.get(icon,headers=self.hdr, timeout = 15)    
         image = QtGui.QImage()
         image.loadFromData(infoimage0.content)
         self.infoimage.setPixmap(QtGui.QPixmap(image)) 
         combined = title +"y:_$W|~_:q"+self.tmpurl
-        if combined in self.bookmarks:
-         self.bookmarkbt2.setText("Remove bookmarks")
-        else: 
-         self.bookmarkbt2.setText("Add to bookmarks")
+        try:
+            if combined in self.bookmarks:
+                self.bookmarkbt2.setText("Remove bookmarks")
+            else: self.bookmarkbt2.setText("Add to bookmarks")
+        except: pass
         try:
          self.thread.terminate()
          self.infochapters.setModel(None)
@@ -749,13 +753,14 @@ class Ui_MainWindowImpl(mangareader.Ui_MainWindow):
         self.lastsel2 = (rawurl)
         self.bookmarkbt2.setText("Remove bookmarks")   
         url = rawurl
-        print(url)
+        
         icon = AbstractMangaSource.AbstractMangaSource.getIconFromUrl(url)
      
         self.stackedwidget.setCurrentIndex(2)
         self.infotext.setText(title)
         if icon != "":
-         try:   
+         try:
+          print("icon",icon, self.hdr) 
           infoimage0 = requests.get(icon,headers=self.hdr, timeout = 10)    
           image = QtGui.QImage()
           image.loadFromData(infoimage0.content)

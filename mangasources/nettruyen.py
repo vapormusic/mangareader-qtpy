@@ -8,7 +8,7 @@ def getSearchResult(text):
         'Accept-Encoding': 'none',
         'Accept-Language': 'en-US,en;q=0.8',
         'Connection': 'keep-alive'}
-        linkurl = str('http://www.nettruyentop.com/tim-truyen?keyword='+str(text))
+        linkurl = str('http://www.nettruyenmax.com/tim-truyen?keyword='+str(text))
         req = requests.get(linkurl, headers=hdr, timeout = 15)
         ## data = json.load(response)   
         # print response.fp.read()
@@ -101,7 +101,7 @@ def getCustomHeader():
         'Accept-Encoding': 'none',
         'Accept-Language': 'en-US,en;q=0.8',
         'Connection': 'keep-alive',
-        'Referer': 'http://www.nettruyentop.com/'       
+        'Referer': 'http://www.nettruyenmax.com/'       
         }
 
 def getImageHeader(): 
@@ -111,7 +111,7 @@ def getImageHeader():
         'Accept-Encoding': 'none',
         'Accept-Language': 'en-US,en;q=0.8',
         'Connection': 'keep-alive',
-        'Referer': 'http://www.nettruyentop.com/'       
+        'Referer': 'http://www.nettruyenmax.com/'       
         }
 
         
